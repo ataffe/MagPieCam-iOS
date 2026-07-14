@@ -4,29 +4,11 @@
 //
 //  Created by Alexander Taffe on 7/12/26.
 //
-
+//  Copyright © 2026 Alexander Taffe. All rights reserved.
 import SwiftUI
 
 struct SignUpView: View {
-    @State private var first_name: String = ""
-    @State private var last_name: String = ""
-    @State private var email: String = ""
-    @State private var password: String = ""
-    @State private var confirmPassword: String = ""
-    
-    private var isFormValid: Bool {
-        !first_name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !last_name.trimmingCharacters(in: .whitespaces).isEmpty &&
-        isEmailValid &&
-        !password.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !confirmPassword.trimmingCharacters(in: .whitespaces).isEmpty &&
-        password == confirmPassword
-    }
-    
-    private var isEmailValid: Bool {
-        let emailRegex = #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
-        return email.range(of: emailRegex, options: .regularExpression) != nil
-    }
+    @State private var viewModel = SignUpViewModel()
     
     var body: some View {
         VStack(spacing: 0) {
@@ -41,18 +23,18 @@ struct SignUpView: View {
                     Text("Create an Account")
                         .font(.title2)
                         .padding()
-                    textFieldAndLabel(with_name: "First Name", bind_to: $first_name)
-                    textFieldAndLabel(with_name: "Last Name", bind_to: $last_name)
-                    textFieldAndLabel(with_name: "Email", bind_to: $email)
+                    textFieldAndLabel(with_name: "First Name", bind_to: $viewModel.first_name)
+                    textFieldAndLabel(with_name: "Last Name", bind_to: $viewModel.last_name)
+                    textFieldAndLabel(with_name: "Email", bind_to: $viewModel.email)
                     textFieldAndLabel(
                         with_name: "Passsword",
-                        bind_to: $password,
+                        bind_to: $viewModel.password,
                         secure: true)
                     textFieldAndLabel(
                         with_name: " Confirm Passsword",
-                        bind_to: $confirmPassword,
+                        bind_to: $viewModel.confirmPassword,
                         secure: true)
-                    Button(action: login) {
+                    Button(action: viewModel.signUp) {
                         Text("Create an Account")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
@@ -60,15 +42,11 @@ struct SignUpView: View {
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.roundedRectangle(radius: 8))
                     .padding()
-                    .disabled(!isFormValid)
+                    .disabled(!viewModel.isFormValid)
                 }
             }
         }
         
-    }
-    
-    func signUp() {
-        print("Signing up...")
     }
     
     func textFieldAndLabel(

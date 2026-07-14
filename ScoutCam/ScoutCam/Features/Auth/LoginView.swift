@@ -4,6 +4,7 @@
 //
 //  Created by Alexander Taffe on 7/11/26.
 //
+//  Copyright © 2026 Alexander Taffe. All rights reserved.
 import SwiftUI
 
 struct LoginView: View {
