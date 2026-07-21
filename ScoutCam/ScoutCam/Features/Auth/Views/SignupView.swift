@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SignupView: View {
-    @State var viewModel: SignUpViewModel
+    @State var signupViewModel: SignUpViewModel
     
     var body: some View {
         VStack(spacing: 0) {
@@ -19,45 +19,60 @@ struct SignupView: View {
                         .padding()
                     textFieldAndLabel(
                         with_name: "First Name",
-                        bind_to: $viewModel.firstName,
-                        error: viewModel.fieldErrors["firstName"]
+                        bind_to: $signupViewModel.firstName,
+                        error: signupViewModel.fieldErrors["firstName"]
                     )
                     textFieldAndLabel(
                         with_name: "Last Name",
-                        bind_to: $viewModel.lastName,
-                        error: viewModel.fieldErrors["lastName"]
+                        bind_to: $signupViewModel.lastName,
+                        error: signupViewModel.fieldErrors["lastName"]
                     )
                     textFieldAndLabel(
                         with_name: "Email",
-                        bind_to: $viewModel.email,
-                        error: viewModel.fieldErrors["email"])
+                        bind_to: $signupViewModel.email,
+                        error: signupViewModel.fieldErrors["email"])
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.emailAddress)
+                        .animation(
+                            .easeInOut(duration: 0.25),
+                            value: signupViewModel.email
+                        )
                     textFieldAndLabel(
                         with_name: "Passsword",
-                        bind_to: $viewModel.password,
-                        error: viewModel.fieldErrors["password"],
+                        bind_to: $signupViewModel.password,
+                        error: signupViewModel.fieldErrors["password"],
                         secure: true)
+                    .animation(
+                        .easeInOut(duration: 0.25),
+                        value: signupViewModel.password
+                    )
                     textFieldAndLabel(
                         with_name: " Confirm Passsword",
-                        bind_to: $viewModel.confirmPassword,
+                        bind_to: $signupViewModel.confirmPassword,
                         secure: true)
                     Button {
-                        Task { await viewModel.signUp() }
+                        Task { await signupViewModel.signUp() }
                     } label: {
-                        Text("Create an Account")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
+                        Group {
+                            if signupViewModel.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("Create an Account")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.roundedRectangle(radius: 8))
                     .padding()
-                    .disabled(!viewModel.isFormValid)
+                    .disabled(!signupViewModel.isFormValid)
                 }
             }
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
     
     func textFieldAndLabel(
@@ -84,19 +99,18 @@ struct SignupView: View {
                     .stroke(error == nil ? Color.clear : Color.red, lineWidth: 1)
                     .padding(.horizontal)
             )
-                
                 if let error {
-                    Text(error)
-                        .font(.caption)
+                    Text(error.capitalized)
+                        .font(.subheadline)
                         .foregroundStyle(.red)
                         .padding(.leading)
                         .transition(.opacity)
                 }
         }
-            .padding(.bottom, 4)
+        .padding(.bottom, 4)
     }
 }
 
 #Preview {
-    SignupView(viewModel: SignUpViewModel(authService: AppDependencies().authService))
+    SignupView(signupViewModel: SignUpViewModel(authService: AppDependencies().authService))
 }

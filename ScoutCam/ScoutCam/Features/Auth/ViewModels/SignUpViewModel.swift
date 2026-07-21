@@ -24,10 +24,15 @@ final class SignUpViewModel {
             if email != lowered {
                 email = lowered
             }
+            fieldErrors["email"] = nil
         }
     }
     
-    var password: String = ""
+    var password: String = "" {
+        didSet {
+            fieldErrors["password"] = nil
+        }
+    }
     var confirmPassword: String = ""
     var isLoading: Bool = false
     var fieldErrors: [String: String] = [:]

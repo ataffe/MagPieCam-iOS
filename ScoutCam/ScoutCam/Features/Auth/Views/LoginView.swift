@@ -47,50 +47,58 @@ struct LoginFormView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.emailAddress)
-                    if let error = viewModel.fieldErrors["email"] {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                            .padding(.leading)
-                            .transition(.opacity)
-                    }
+                        .onChange(of: $viewModel.email.wrappedValue){
+                            viewModel.fieldErrors["email"] = nil
+                        }
                     SecureField("Password", text: $viewModel.password)
                         .padding(.bottom)
                         .padding(.leading)
                         .padding(.trailing)
                         .textFieldStyle(.roundedBorder)
-                    if let error = viewModel.fieldErrors["password"] {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                            .padding(.leading)
-                            .transition(.opacity)
-                    }
+                        .onChange(of: $viewModel.password.wrappedValue) {
+                            viewModel.fieldErrors["password"] = nil
+                        }
                     Button("Forgot Password") {
                         print("Triggering forgot password flow.")
                     }
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading)
+                    if !viewModel.generalError.isEmpty {
+                        Text(viewModel.generalError.capitalized)
+                            .font(.callout)
+                            .foregroundStyle(.red)
+                            .padding(.top)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                     Button {
-                        Task { await viewModel.login()}
+                        Task { await viewModel.login() }
                     } label: {
-                        Text("Sign in")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
+                        Group {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("Sign in")
+                                    .font(.headline)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.roundedRectangle(radius: 8))
-                    .padding(.top, 50)
+                    .padding(.top, 30)
+                    .disabled(!viewModel.isFormValid || viewModel.isLoading)
                     NavigationLink("Don't have an account? Sign up!") {
                         SignupView(
-                            viewModel: SignUpViewModel(
+                            signupViewModel: SignUpViewModel(
                                 authService: dependencies.authService)
                         )
                     }
                     .foregroundStyle(.blue)
                     .padding(.top)
                 }
+                .animation(.easeInOut(duration: 0.25), value: viewModel.generalError)
             }
         }
         .padding()
