@@ -32,3 +32,33 @@ enum AuthEndpoint: ApiEndpoint {
         }
     }
 }
+
+enum CameraEndpoint: ApiEndpoint {
+    case claimCamera
+    case getCameras
+    case getRules(cameraId: Int)
+    case newRule(cameraId: Int)
+    case updateRule(cameraId: Int, ruleId: Int)
+
+    var path: String {
+        switch self {
+        case .claimCamera:
+            "cameras/claim/"
+        case .getCameras: "cameras/"
+        case .getRules(let cameraId):
+            "cameras/\(cameraId)/rules/"
+        case .newRule(let cameraId):
+            "cameras/\(cameraId)/rules/"
+        case .updateRule(let cameraId, let ruleId):
+            "cameras/\(cameraId)/rules/\(ruleId)/"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .claimCamera, .newRule: .post
+        case .getRules, .getCameras: .get
+        case .updateRule: .put
+        }
+    }
+}

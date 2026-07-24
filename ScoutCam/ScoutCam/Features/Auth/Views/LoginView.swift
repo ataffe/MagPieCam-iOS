@@ -34,7 +34,7 @@ struct LoginFormView: View {
             Text("ScoutCam") // TODO: Replace with logo
                 .font(.largeTitle)
                 .bold()
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.blue)
                 .padding(.bottom, Spacing.logoPaddingTop)
                 .padding(.top, Spacing.logoPaddingBottom)
             ScrollView {

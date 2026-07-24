@@ -13,6 +13,7 @@ enum AppConfig {
               let url = URL(string: urlString) else {
             fatalError("API_BASE_URL missing or invalid in Info.plist")
         }
+        print("Base Url: \(urlString)")
         return url
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 enum JWT {
     /// Returns the expiration date encoded in a JWT's `exp` claim, or nil if it can't be read.
-    static func expirationDate(from token: String) -> Date? {
+    nonisolated static func expirationDate(from token: String) -> Date? {
         let segments = token.components(separatedBy: ".")
         guard segments.count == 3 else { return nil }
 
@@ -34,7 +34,7 @@ enum JWT {
         return Date(timeIntervalSince1970: exp)
     }
 
-    static func isExpired(_ token: String, leeway: TimeInterval = 30) -> Bool {
+    nonisolated static func isExpired(_ token: String, leeway: TimeInterval = 30) -> Bool {
         guard let expiry = expirationDate(from: token) else {
             return true   // can't read it → treat as expired/invalid
         }

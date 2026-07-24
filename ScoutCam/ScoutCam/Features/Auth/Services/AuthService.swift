@@ -23,6 +23,7 @@ enum AuthError: Error {
     case network
     case unexpected
     case accoutCreatedButSessionNoSaved
+    case sessionExpired
 }
 
 actor AuthService {
@@ -30,6 +31,14 @@ actor AuthService {
     private let keychainStore: KeychainStore
     private let authState: AuthState
     
+    private struct RefreshRequest: Encodable {
+        let refresh: String
+    }
+
+    private struct RefreshResponse: Decodable {
+        let access: String
+    }
+
     struct LoginRequest: Encodable {
         let email: String
         let username: String
@@ -172,11 +181,54 @@ actor AuthService {
         }
     }
     
-    func logOut() async {
+    /// Returns a valid access token, refreshing it first if it has expired.
+    /// Called by ApiClient's token provider before each authenticated request.
+    func validAccessToken() async throws -> String? {
+        guard let accessToken = try keychainStore.read(TokenKey.accessToken) else { return nil }
+        guard JWT.isExpired(accessToken) else { return accessToken }
+        return try await refreshAccessToken()
+    }
+
+    private func refreshAccessToken() async throws -> String {
+        guard let refreshToken = try keychainStore.read(TokenKey.refreshToken) else {
+            Logger.auth.info("No refresh token found — signing out.")
+            await signOut()
+            throw AuthError.sessionExpired
+        }
+
+        let response: RefreshResponse
+        do {
+            response = try await apiClient.requestUnauthenticated(
+                endpoint: AuthEndpoint.refreshToken,
+                body: RefreshRequest(refresh: refreshToken)
+            )
+        } catch APIError.unauthorized {
+            Logger.auth.info("Refresh token rejected — signing out.")
+            await signOut()
+            throw AuthError.sessionExpired
+        } catch {
+            Logger.auth.error("Token refresh failed: \(error)")
+            throw AuthError.network
+        }
+
+        do {
+            try keychainStore.save(response.access, for: TokenKey.accessToken)
+        } catch {
+            Logger.auth.error("Failed to persist refreshed access token: \(error)")
+        }
+        Logger.auth.debug("Access token refreshed successfully.")
+        return response.access
+    }
+
+    private func signOut() async {
         keychainStore.delete(TokenKey.accessToken)
         keychainStore.delete(TokenKey.refreshToken)
-        Logger.auth.info("User logged out successfully!")
         await apiClient.deleteAuthToken()
         await MainActor.run { authState.status = .signedOut }
+    }
+
+    func logOut() async {
+        Logger.auth.info("User logged out successfully!")
+        await signOut()
     }
 }

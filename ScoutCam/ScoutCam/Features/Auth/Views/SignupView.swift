@@ -10,13 +10,24 @@ import SwiftUI
 struct SignupView: View {
     @State var signupViewModel: SignUpViewModel
     
+    init(signupViewModel: SignUpViewModel) {
+        let appearance = UINavigationBarAppearance()
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.systemBlue,
+            .font: UIFont.systemFont(ofSize: 25, weight: .semibold)
+        ]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        self.signupViewModel = signupViewModel
+    }
+
+    
     var body: some View {
-        VStack(spacing: 0) {
+        NavigationStack {
+            Divider()
             ScrollView {
                 VStack {
-                    Text("Create an Account")
-                        .font(.title2)
-                        .padding()
                     textFieldAndLabel(
                         with_name: "First Name",
                         bind_to: $signupViewModel.firstName,
@@ -72,6 +83,10 @@ struct SignupView: View {
                     .disabled(!signupViewModel.isFormValid)
                 }
             }
+            .padding(.top)
+            .navigationTitle("Create an Account")
+            .navigationBarTitleDisplayMode(.inline)
+        
         }
     }
     
