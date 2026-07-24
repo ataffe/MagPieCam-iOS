@@ -40,59 +40,82 @@ actor ApiClient {
     private let baseUrl: URL
     private let session: URLSession
     private var authToken: String?
-    
+    private var tokenProvider: (() async throws -> String?)?
+
     init(baseUrl: URL, session: URLSession = .shared) {
         self.baseUrl = baseUrl
         self.session = session
     }
-    
+
     func setAuthToken(_ token: String?) {
-            authToken = token
-        }
-    
+        authToken = token
+    }
+
     func deleteAuthToken() {
         authToken = nil
     }
-    
+
+    func setTokenProvider(_ provider: @escaping () async throws -> String?) {
+        tokenProvider = provider
+    }
+
     func request<Response: Decodable>(
         _ endpoint: any ApiEndpoint,
-            method: HTTPMethod = .get
-        ) async throws -> Response {
-            try await send(
-                to: endpoint.path,
-                method: endpoint.method,
-                bodyData: nil
-            )
+        method: HTTPMethod = .get
+    ) async throws -> Response {
+        try await send(to: endpoint.path, method: endpoint.method, bodyData: nil)
     }
-    
+
     func request<Body: Encodable, Response: Decodable>(
         endpoint: any ApiEndpoint,
         body: Body
     ) async throws -> Response {
+        let bodyData = try encode(body)
+        return try await send(to: endpoint.path, method: endpoint.method, bodyData: bodyData)
+    }
+
+    // Used for requests that must not trigger the token provider (e.g. the refresh call itself).
+    func requestUnauthenticated<Body: Encodable, Response: Decodable>(
+        endpoint: any ApiEndpoint,
+        body: Body
+    ) async throws -> Response {
+        let bodyData = try encode(body)
+        return try await send(to: endpoint.path, method: endpoint.method, bodyData: bodyData, skipAuth: true)
+    }
+
+    private func encode<Body: Encodable>(_ body: Body) throws -> Data {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        let bodyData: Data
         do {
-            bodyData = try encoder.encode(body)
+            return try encoder.encode(body)
         } catch {
             throw APIError.encodingError(error)
         }
-        return try await send(to: endpoint.path, method: endpoint.method, bodyData: bodyData)
     }
-    
+
     private func send<Response: Decodable>(
         to endpoint: String,
         method: HTTPMethod,
-        bodyData: Data?
+        bodyData: Data?,
+        skipAuth: Bool = false
     ) async throws -> Response {
         var urlRequest = URLRequest(url: baseUrl.appendingPathComponent(endpoint))
         urlRequest.httpMethod = method.rawValue
-        urlRequest.httpBody = bodyData
         if bodyData != nil {
+            urlRequest.httpBody = bodyData
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
-        if let authToken {
-            urlRequest.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+
+        if !skipAuth {
+            let token: String?
+            if let provider = tokenProvider {
+                token = try await provider()
+            } else {
+                token = authToken
+            }
+            if let token {
+                urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
         }
 
         let data: Data

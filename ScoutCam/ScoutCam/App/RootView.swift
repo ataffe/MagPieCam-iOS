@@ -19,7 +19,7 @@ struct RootView: View {
         case .signedOut:
             LoginView()
         case .signedIn:
-            CamerasHomeView()
+            CamerasHomeView(cameraService: dependencies.cameraService)
         }
     }
 }
