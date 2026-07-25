@@ -18,11 +18,13 @@ final class CameraHomeViewModel {
         self.cameraService = cameraService
     }
     
-    func getCameras() async {
+    func getUserCameras() async {
+        isLoading = true
+        
+        defer { isLoading = false }
+        
         do {
-            isLoading = true
-            try await cameraService.getCameras()
-            isLoading = false
+            try await cameraService.fetchUserCameras()
         } catch {
             // TODO: Show an error message
         }

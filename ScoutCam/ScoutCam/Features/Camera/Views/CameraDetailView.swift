@@ -9,15 +9,23 @@ import SwiftUI
 
 struct CameraDetailView: View {
     let camera: Camera
+    let cameraService: CameraService
+    let rulesService: RulesService
     
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
-    init(camera: Camera) {
+    init(
+        camera: Camera,
+        cameraService: CameraService,
+        rulesService: RulesService
+    ) {
         self.camera = camera
+        self.cameraService = cameraService
+        self.rulesService = rulesService
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.systemBlue,
-            .font: UIFont.systemFont(ofSize: 25, weight: .semibold)
+            .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold)
         ]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
         UINavigationBar.appearance().standardAppearance = appearance
@@ -33,7 +41,16 @@ struct CameraDetailView: View {
             
             Divider()
             LazyVGrid(columns: columns, spacing: 16) {
-                CameraDetailButton(image: Image(systemName: "checklist.checked")) {Text("Rules")}
+                NavigationLink(
+                    destination: RulesView(
+                        rulesViewModel: RulesViewModel(
+                            camera: camera,
+                            rulesService: rulesService
+                        )
+                    )
+                ) {
+                    CameraDetailButton(image: Image(systemName: "checklist.checked")) {Text("Rules")}
+                }
                 CameraDetailButton(image: Image(systemName: "bell.fill")) {
                     Text("Notifications")
                 }
@@ -43,6 +60,15 @@ struct CameraDetailView: View {
             }
             .navigationTitle(camera.location)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Settings", systemImage: "gearshape.fill") {
+                        print("Setting sheet")
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+            
             Text("Recent Notifications")
                 .font(.title2)
                 .bold()
@@ -55,7 +81,7 @@ struct CameraDetailView: View {
     
     struct RecentNotificationCard: View {
         var body: some View {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
                 .fill(Color(.secondarySystemBackground))
                 .frame(height: 70)
                 .overlay(
@@ -86,7 +112,7 @@ struct CameraDetailView: View {
         @ViewBuilder let text: TEXT
 
         var body: some View {
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
             .fill(Color(.secondarySystemBackground))
             .frame(height: 130)
             .overlay(
@@ -102,6 +128,7 @@ struct CameraDetailView: View {
                 }
                 .padding()
             )
+            .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
             .padding(.vertical, 3)
             .padding(.horizontal)
         }
@@ -109,12 +136,15 @@ struct CameraDetailView: View {
 }
 
 #Preview {
+    let dependencies = AppDependencies()
     NavigationStack {
         CameraDetailView(
             camera: Camera(
                 id: "cam-preview-001",
                 location: "living room".capitalized
-            )
+            ),
+            cameraService: dependencies.cameraService,
+            rulesService: dependencies.rulesService
         )
     }
 }

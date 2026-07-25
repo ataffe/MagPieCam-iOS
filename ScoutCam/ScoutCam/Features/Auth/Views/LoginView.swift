@@ -28,7 +28,22 @@ struct LoginView: View {
 struct LoginFormView: View {
     @Bindable var viewModel: LoginViewModel
     let dependencies: AppDependencies
-    
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var backgroundGradient: LinearGradient {
+        colorScheme == .dark
+            ? LinearGradient(
+                colors: [Color(.systemBackground), Color.blue.opacity(0.5)],
+                startPoint: .top,
+                endPoint: .bottom
+              )
+            : LinearGradient(
+                colors: [.white, Color.blue.opacity(0.25)],
+                startPoint: .top,
+                endPoint: .bottom
+              )
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Text("ScoutCam") // TODO: Replace with logo
@@ -102,6 +117,7 @@ struct LoginFormView: View {
             }
         }
         .padding()
+        .background(backgroundGradient.ignoresSafeArea())
     }
 }
 

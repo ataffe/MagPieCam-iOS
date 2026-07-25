@@ -12,12 +12,11 @@ protocol ApiEndpoint {
     var method: HTTPMethod { get }
 }
 
-
 enum AuthEndpoint: ApiEndpoint {
     case signUp
     case logIn
     case refreshToken
-    
+
     var path: String {
         switch self {
         case .signUp: "auth/register/"
@@ -25,7 +24,7 @@ enum AuthEndpoint: ApiEndpoint {
         case .refreshToken: "auth/token/refresh/"
         }
     }
-    
+
     var method: HTTPMethod {
         switch self {
         case .signUp, .logIn, .refreshToken: .post
@@ -36,29 +35,48 @@ enum AuthEndpoint: ApiEndpoint {
 enum CameraEndpoint: ApiEndpoint {
     case claimCamera
     case getCameras
-    case getRules(cameraId: Int)
-    case newRule(cameraId: Int)
-    case updateRule(cameraId: Int, ruleId: Int)
 
     var path: String {
         switch self {
-        case .claimCamera:
-            "cameras/claim/"
+        case .claimCamera: "cameras/claim/"
         case .getCameras: "cameras/"
-        case .getRules(let cameraId):
-            "cameras/\(cameraId)/rules/"
-        case .newRule(let cameraId):
-            "cameras/\(cameraId)/rules/"
-        case .updateRule(let cameraId, let ruleId):
-            "cameras/\(cameraId)/rules/\(ruleId)/"
         }
     }
 
     var method: HTTPMethod {
         switch self {
-        case .claimCamera, .newRule: .post
-        case .getRules, .getCameras: .get
+        case .claimCamera: .post
+        case .getCameras: .get
+        }
+    }
+}
+
+enum RuleEndpoint: ApiEndpoint {
+    case getRules(cameraId: String)
+    case addRule(cameraId: String)
+    case deleteRule(cameraId: String, ruleId: String)
+    case updateRule(cameraId: String, ruleId: String)
+
+    var path: String {
+        switch self {
+        case .getRules(let cameraId):
+            "cameras/\(cameraId)/rules/"
+        case .addRule(let cameraId): "cameras/\(cameraId)/rules/"
+        case .updateRule(
+            let cameraId,
+            let ruleId
+        ): "cameras/\(cameraId)/rules/\(ruleId)/"
+        case .deleteRule(let cameraId, let ruleId):
+            "cameras/\(cameraId)/rules/\(ruleId)/"
+        }
+    }
+    
+    var method: HTTPMethod {
+        switch self {
+        case .getRules: .get
+        case .addRule: .post
         case .updateRule: .put
+        case .deleteRule: .delete
         }
     }
 }

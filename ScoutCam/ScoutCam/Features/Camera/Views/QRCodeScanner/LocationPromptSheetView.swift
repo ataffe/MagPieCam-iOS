@@ -35,7 +35,6 @@ struct LocationPromptSheetView: View {
                     .font(.headline)
                     .frame(maxWidth: .infinity)
             }
-            .foregroundStyle(.blue)
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.roundedRectangle(radius: 8))
             .disabled(viewModel.location.trimmingCharacters(in: .whitespaces).isEmpty)

@@ -58,20 +58,27 @@ actor ApiClient {
     func setTokenProvider(_ provider: @escaping () async throws -> String?) {
         tokenProvider = provider
     }
-
+    
+    // For no request body but response body
     func request<Response: Decodable>(
-        _ endpoint: any ApiEndpoint,
-        method: HTTPMethod = .get
+        _ endpoint: any ApiEndpoint
     ) async throws -> Response {
-        try await send(to: endpoint.path, method: endpoint.method, bodyData: nil)
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: nil)
+        return try decode(data)
     }
-
+    
+    // For request body and response
     func request<Body: Encodable, Response: Decodable>(
         endpoint: any ApiEndpoint,
         body: Body
     ) async throws -> Response {
-        let bodyData = try encode(body)
-        return try await send(to: endpoint.path, method: endpoint.method, bodyData: bodyData)
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body))
+        return try decode(data)
+    }
+    
+    // For no request or response body
+    func request(_ endpoint: any ApiEndpoint) async throws {
+        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: nil)
     }
 
     // Used for requests that must not trigger the token provider (e.g. the refresh call itself).
@@ -79,8 +86,8 @@ actor ApiClient {
         endpoint: any ApiEndpoint,
         body: Body
     ) async throws -> Response {
-        let bodyData = try encode(body)
-        return try await send(to: endpoint.path, method: endpoint.method, bodyData: bodyData, skipAuth: true)
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body), skipAuth: true)
+        return try decode(data)
     }
 
     private func encode<Body: Encodable>(_ body: Body) throws -> Data {
@@ -93,15 +100,25 @@ actor ApiClient {
         }
     }
 
-    private func send<Response: Decodable>(
-        to endpoint: String,
+    private func decode<Response: Decodable>(_ data: Data) throws -> Response {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        do {
+            return try decoder.decode(Response.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    private func execute(
+        _ endpoint: String,
         method: HTTPMethod,
         bodyData: Data?,
         skipAuth: Bool = false
-    ) async throws -> Response {
+    ) async throws -> Data {
         var urlRequest = URLRequest(url: baseUrl.appendingPathComponent(endpoint))
         urlRequest.httpMethod = method.rawValue
-        if bodyData != nil {
+        if let bodyData {
             urlRequest.httpBody = bodyData
             urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
@@ -148,13 +165,7 @@ actor ApiClient {
             throw parseError(from: data, statusCode: httpResponse.statusCode)
         }
 
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        do {
-            return try decoder.decode(Response.self, from: data)
-        } catch {
-            throw APIError.decodingError(error)
-        }
+        return data
     }
     
     private func parseError(from data: Data, statusCode: Int) -> APIError {

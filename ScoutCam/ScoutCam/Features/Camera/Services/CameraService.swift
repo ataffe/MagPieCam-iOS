@@ -27,20 +27,6 @@ actor CameraService {
     private let apiClient: ApiClient
     private let cameraStore: CameraStore
 
-    struct ClaimCameraResponse: Decodable {
-        let publicCameraId: String
-    }
-
-    struct ClaimCameraRequest: Encodable {
-        let claimToken: String
-        let location: String
-    }
-    
-    struct CameraResponse: Decodable {
-        let publicCameraId: String
-        let location: String
-    }
-
     init(apiClient: ApiClient, cameraStore: CameraStore) {
         self.apiClient = apiClient
         self.cameraStore = cameraStore
@@ -66,7 +52,7 @@ actor CameraService {
         }
     }
     
-    func getCameras() async throws {
+    func fetchUserCameras() async throws {
         do {
             let response: [CameraResponse] = try await callApi(CameraEndpoint.getCameras)
             let userCameras = response.map {
