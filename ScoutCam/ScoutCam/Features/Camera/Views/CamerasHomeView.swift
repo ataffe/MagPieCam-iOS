@@ -19,7 +19,7 @@ struct CamerasHomeView: View {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.systemBlue,
-            .font: UIFont.systemFont(ofSize: 25, weight: .semibold)
+            .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold)
         ]
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
         UINavigationBar.appearance().standardAppearance = appearance
@@ -36,23 +36,27 @@ struct CamerasHomeView: View {
             }
             ScrollView {
                 ForEach(cameras) { camera in
-                    NavigationLink(destination: CameraDetailView(camera: camera)) {
+                    NavigationLink(
+                        destination: CameraDetailView(
+                            camera: camera,
+                            cameraService: dependencies.cameraService,
+                            rulesService: dependencies.rulesService
+                        )
+                    ) {
                         CameraCardView(camera: camera)
+                            .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
                     }
                     .buttonStyle(.plain)
                 }.padding(.horizontal)
-
-                NavigationLink(
-                    destination: QRScannerView(
-                        qrScannerViewModel: QRScannerViewModel(
-                            cameraService: dependencies.cameraService
-                        )
-                    )
-                ) {
-                    AddCameraCard()
+                
+                if cameras.isEmpty && !cameraHomeViewModel.isLoading {
+                    QRScannerNavLink(
+                        cameraService: dependencies.cameraService) {
+                            AddCameraCard()
+                        }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal)
             }
             .navigationTitle("Cameras")
             .navigationBarTitleDisplayMode(.inline)
@@ -65,30 +69,53 @@ struct CamerasHomeView: View {
                     }
                     .foregroundStyle(.red)
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    QRScannerNavLink(
+                        cameraService: dependencies.cameraService) {
+                            Image(systemName: "plus")
+                        }
+                }
             }
         }.onAppear {
             Task {
-                await cameraHomeViewModel.getCameras()
+                await cameraHomeViewModel.getUserCameras()
             }
+        }
+    }
+    
+    private struct QRScannerNavLink<CONTENT: View>: View {
+        let cameraService: CameraService
+        @ViewBuilder let content: CONTENT
+        
+        var body: some View {
+            NavigationLink(
+                destination: QRScannerView(
+                    qrScannerViewModel: QRScannerViewModel(
+                        cameraService: cameraService
+                    )
+                )
+            ) {
+                content
+            }
+        }
+    }
+    
+    private struct AddCameraCard: View {
+        var body: some View {
+            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
+                .fill(Color(.secondarySystemBackground))
+                .frame(height: 120)
+                .overlay(
+                    Image(systemName: "plus.square")
+                        .font(.system(size: 28, weight: .light))
+                        .foregroundStyle(.secondary)
+                )
+                .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+                .padding(5)
         }
     }
 }
 
-
-
-private struct AddCameraCard: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color(.secondarySystemBackground))
-            .frame(height: 120)
-            .overlay(
-                Image(systemName: "plus")
-                    .font(.system(size: 28, weight: .light))
-                    .foregroundStyle(.secondary)
-            )
-            .padding(5)
-    }
-}
 
 #Preview {
     let deps = AppDependencies()

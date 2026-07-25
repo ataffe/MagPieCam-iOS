@@ -12,6 +12,7 @@ import Foundation
 final class CameraDetailViewModel {
     let camera: Camera
     let cameraService: CameraService
+    var isLoading = false
     
     struct Notification {
         let rule: String
