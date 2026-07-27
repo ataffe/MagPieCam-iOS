@@ -7,18 +7,15 @@
 
 import SwiftUI
 
-struct RulesView: View {
+struct NotificationRulesView: View {
     let rulesViewModel: RulesViewModel
     @State private var isShowingAddRule = false
+    @Environment(\.colorScheme) private var colorScheme
 
     init(rulesViewModel: RulesViewModel) {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue,
             .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold),
-        ]
-        appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue
         ]
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
@@ -28,10 +25,9 @@ struct RulesView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Divider()
                 List {
                     ForEach(rulesViewModel.rules) { rule in
-                        RuleCardView(rule: rule) {
+                        NotificationRuleCardView(rule: rule) {
                                 rulesViewModel.toggleRule(id: rule.id)
                             }
                             .listRowInsets(EdgeInsets())
@@ -53,11 +49,12 @@ struct RulesView: View {
                 }
                 .listStyle(.plain)
             }
+            .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
             .task { await rulesViewModel.getCameraRules() }
-            .navigationTitle("\(rulesViewModel.camera.location) Camera Rules")
+            .navigationTitle("\(rulesViewModel.camera.location) Notification Rules")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $isShowingAddRule) {
-                AddRuleSheetView(rulesViewModel: rulesViewModel)
+                AddNotificationRuleSheetView(rulesViewModel: rulesViewModel)
                     .presentationDetents([.large])
             }
         }
@@ -85,10 +82,11 @@ struct RulesView: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(.clear)
                     .opacity(0.80)
                     .shadow(color: .black.opacity(0.50), radius: 4, y: 2)
             )
+            .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
             .padding()
         }
     }
@@ -114,7 +112,7 @@ struct RulesView: View {
             ),
         ]
     )
-    RulesView(
+    NotificationRulesView(
         rulesViewModel: rulesViewModel
     )
 }

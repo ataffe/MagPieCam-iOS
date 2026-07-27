@@ -7,8 +7,10 @@
 
 import SwiftUI
 
-struct AddRuleSheetView: View {
+struct AddNotificationRuleSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
+    
     let rulesViewModel: RulesViewModel
     @State private var nickname = ""
     @State private var ruleSuffix = ""
@@ -23,7 +25,7 @@ struct AddRuleSheetView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.top, 32)
 
-            Text("Want your camera to keep an eye on something? Add a rule and get notified when it happens.")
+            Text("Want your camera to keep an eye on something? Add an alert rule and get notified when it happens.")
                 .font(.body)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.secondary)
@@ -103,13 +105,14 @@ struct AddRuleSheetView: View {
             .padding(.bottom, 32)
         }
         .padding(.horizontal)
+        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
     }
 }
 
 #Preview {
     let deps = AppDependencies()
     let camera = Camera(id: "123", location: "Kitchen")
-    AddRuleSheetView(
+    AddNotificationRuleSheetView(
         rulesViewModel: RulesViewModel(
             camera: camera,
             rulesService: deps.rulesService

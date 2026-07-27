@@ -12,6 +12,7 @@ internal import AVFoundation
 struct QRScannerView: View {
     @State var qrScannerViewModel: QRScannerViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         CodeScannerView(
@@ -35,6 +36,7 @@ struct QRScannerView: View {
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                 .padding(.top)
         }
+        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
         .navigationTitle("Add a Camera")
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: qrScannerViewModel.didSuccessfullyClaim) { _, succeeded in

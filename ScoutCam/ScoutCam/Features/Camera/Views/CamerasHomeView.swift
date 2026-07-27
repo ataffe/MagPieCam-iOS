@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CamerasHomeView: View {
     @Environment(AppDependencies.self) private var dependencies
+    @Environment(\.colorScheme) private var colorScheme
     @State var cameraHomeViewModel: CameraHomeViewModel
 
     private var cameras: [Camera] { dependencies.cameraStore.cameras }
@@ -18,10 +19,8 @@ struct CamerasHomeView: View {
     init(cameraService: CameraService) {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue,
             .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold)
         ]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         cameraHomeViewModel = CameraHomeViewModel(cameraService: cameraService)
@@ -29,7 +28,6 @@ struct CamerasHomeView: View {
 
     var body: some View {
         NavigationStack {
-            Divider()
             if cameraHomeViewModel.isLoading {
                 ProgressView()
                 Text("Loading Cameras...")
@@ -76,7 +74,9 @@ struct CamerasHomeView: View {
                         }
                 }
             }
-        }.onAppear {
+            .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
+        }
+        .onAppear {
             Task {
                 await cameraHomeViewModel.getUserCameras()
             }

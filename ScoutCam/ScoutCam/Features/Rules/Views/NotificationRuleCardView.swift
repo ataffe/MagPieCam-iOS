@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RuleCardView: View {
+struct NotificationRuleCardView: View {
     let rule: Rule
     let onToggle: () -> Void
 
@@ -23,28 +23,27 @@ struct RuleCardView: View {
                     .font(.subheadline)
             }
             Spacer()
-            Button {
-                onToggle()
-            } label: {
-                Image(systemName: rule.isEnabled ? "eye.fill" : "eye.slash")
-                    .font(.title2)
-                    .foregroundStyle(rule.isEnabled ? Color.blue : Color.secondary)
-            }
-            .buttonStyle(.plain)
+            Toggle("", isOn: Binding(
+                get: { rule.isEnabled },
+                set: { _ in onToggle() }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
-                .fill(Color(.secondarySystemBackground))
+                .fill(.clear)
                 .opacity(0.80)
                 .shadow(color: .black.opacity(0.50), radius: 4, y: 2)
         )
+        .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
         .padding()
     }
 }
 
 #Preview {
-    RuleCardView(
+    NotificationRuleCardView(
         rule: Rule(id: "123", rule: "Tell me when you see a cat use the litterbox.", ruleNickname: "Cat Uses Litterbox", isEnabled: true),
         onToggle: {}
     )

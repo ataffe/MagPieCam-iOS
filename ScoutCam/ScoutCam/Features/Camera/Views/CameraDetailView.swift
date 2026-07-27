@@ -11,7 +11,8 @@ struct CameraDetailView: View {
     let camera: Camera
     let cameraService: CameraService
     let rulesService: RulesService
-    
+    @Environment(\.colorScheme) private var colorScheme
+
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     init(
@@ -34,29 +35,39 @@ struct CameraDetailView: View {
 
     var body: some View {
         NavigationStack {
-            CameraDetailButton(image: Image(systemName: "video"))
-            {Text("Go Live")}
-                .foregroundStyle(Color.red)
-                .padding(.horizontal)
-            
-            Divider()
-            LazyVGrid(columns: columns, spacing: 16) {
+            VStack {
+                NavigationLink(destination: CameraLiveVideoView(camera: camera)) {
+                    CameraDetailButton(image: Image(systemName: "video"))
+                    {Text("Go Live")}
+                        .foregroundStyle(Color.red)
+
+                }
                 NavigationLink(
-                    destination: RulesView(
+                    destination: NotificationRulesView(
                         rulesViewModel: RulesViewModel(
                             camera: camera,
                             rulesService: rulesService
                         )
                     )
                 ) {
-                    CameraDetailButton(image: Image(systemName: "checklist.checked")) {Text("Rules")}
+                    CameraDetailButton(
+                        image: Image(
+                            "CatIconNoBackground"
+                        ),
+                        imageHeight: 80,
+                        buttonHeight: 140,
+                        buttonSpacing: 0,
+                        imageTextPadding: 5,
+                    ) {
+                        Text("Tell me what to look for!")
+                    }
                 }
                 CameraDetailButton(image: Image(systemName: "bell.fill")) {
                     Text("Notifications")
                 }
+                CameraDetailButton(image: Image(systemName: "chart.xyaxis.line")) {
+                    Text("Stats")
             }
-            CameraDetailButton(image: Image(systemName: "chart.xyaxis.line")) {
-                Text("Stats")
             }
             .navigationTitle(camera.location)
             .navigationBarTitleDisplayMode(.inline)
@@ -74,61 +85,39 @@ struct CameraDetailView: View {
                 .bold()
                 .padding(.vertical)
             ScrollView {
-                RecentNotificationCard()
+                RecentNotificationView()
             }
         }
-    }
-    
-    struct RecentNotificationCard: View {
-        var body: some View {
-            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
-                .fill(Color(.secondarySystemBackground))
-                .frame(height: 70)
-                .overlay(
-                    HStack(alignment: .center) {
-                        VStack {
-                            Text("Rule")
-                                .font(.headline)
-                                .underline()
-                                .padding(.bottom, 5)
-                            Text("Cat in kitchen")
-                        }
-                        .frame(maxWidth: .infinity)
-                        Divider()
-                        VStack {
-                            Text("Date: 07/24/2026")
-                                .font(.headline)
-                            Text("Time:  @ 10:00PM")
-                                .font(.headline)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                )
-        }
+        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
     }
     
     struct CameraDetailButton<TEXT: View> : View {
         let image: Image
+        var imageHeight: CGFloat? = nil
+        var buttonHeight: CGFloat = 130
+        var buttonSpacing: CGFloat? = nil
+        var imageTextPadding: CGFloat = 10
         @ViewBuilder let text: TEXT
 
         var body: some View {
             RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
-            .fill(Color(.secondarySystemBackground))
-            .frame(height: 130)
+                .fill(.clear)
+            .frame(height: buttonHeight)
             .overlay(
-                VStack {
+                VStack(spacing: buttonSpacing) {
                     image
                         .resizable()
                         .scaledToFit()
+                        .frame(height: imageHeight)
                     text
                         .font(.title2)
                         .bold()
                         .foregroundStyle(Color.primary)
-                        .padding(.top, 10)
+                        .padding(.top, imageTextPadding)
                 }
                 .padding()
             )
-            .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+            .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
             .padding(.vertical, 3)
             .padding(.horizontal)
         }

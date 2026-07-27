@@ -12,7 +12,7 @@ struct CameraCardView: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: 12)
-            .fill(Color(.secondarySystemBackground))
+            .fill(.clear)
             .frame(height: 120)
             .overlay(
                 VStack {
@@ -25,6 +25,8 @@ struct CameraCardView: View {
                 }
                     .padding()
             )
+            .glassEffect()
+            .contentShape(RoundedRectangle(cornerRadius: 12))
             .padding(5)
     }
 }
