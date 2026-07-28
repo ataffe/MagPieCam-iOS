@@ -19,4 +19,5 @@ nonisolated struct ClaimCameraRequest: Encodable {
 nonisolated struct CameraResponse: Decodable {
     let publicCameraId: String
     let location: String
+    let cameraPreviewUrl: String?
 }

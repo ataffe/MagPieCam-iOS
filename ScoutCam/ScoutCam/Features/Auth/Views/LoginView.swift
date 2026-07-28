@@ -30,19 +30,6 @@ struct LoginFormView: View {
     let dependencies: AppDependencies
     @Environment(\.colorScheme) private var colorScheme
 
-    private var backgroundGradient: LinearGradient {
-        colorScheme == .dark
-            ? LinearGradient(
-                colors: [Color(.systemBackground), Color.blue.opacity(0.5)],
-                startPoint: .top,
-                endPoint: .bottom
-              )
-            : LinearGradient(
-                colors: [.white, Color.blue.opacity(0.25)],
-                startPoint: .top,
-                endPoint: .bottom
-              )
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -117,7 +104,7 @@ struct LoginFormView: View {
             }
         }
         .padding()
-        .background(backgroundGradient.ignoresSafeArea())
+        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
     }
 }
 

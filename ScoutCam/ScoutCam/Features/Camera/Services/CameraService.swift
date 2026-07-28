@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 import os
 
 extension Logger {
@@ -40,7 +41,11 @@ actor CameraService {
                 CameraEndpoint.claimCamera,
                 body: body
             )
-            let camera = Camera(id: response.publicCameraId, location: location)
+            let camera = Camera(
+                id: response.publicCameraId,
+                location: location,
+                cameraPreviewUrl: nil
+            )
             await MainActor.run { cameraStore.add(camera) }
             Logger.camera.info("Camera \(camera.id) claimed and cached.")
         } catch {
@@ -56,10 +61,15 @@ actor CameraService {
         do {
             let response: [CameraResponse] = try await callApi(CameraEndpoint.getCameras)
             let userCameras = response.map {
-                Camera(id: $0.publicCameraId, location: $0.location.capitalized)
+                Camera(
+                    id: $0.publicCameraId,
+                    location: $0.location.capitalized,
+                    cameraPreviewUrl: $0.cameraPreviewUrl
+                )
             }
             await MainActor.run { cameraStore.cameras = userCameras }
             Logger.camera.info("Successfully retrieved cameras.")
+            await fetchPreviewImages(for: userCameras)
         } catch {
             Logger.camera
                 .error(
@@ -69,6 +79,27 @@ actor CameraService {
         }
     }
     
+    private func fetchPreviewImages(for cameras: [Camera]) async {
+        await withTaskGroup(of: Void.self) { group in
+            for camera in cameras {
+                guard let urlString = camera.cameraPreviewUrl,
+                      let url = URL(string: urlString) else { continue }
+                group.addTask { await self.fetchPreviewImage(cameraId: camera.id, from: url) }
+            }
+        }
+    }
+
+    private func fetchPreviewImage(cameraId: String, from url: URL) async {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            guard let image = UIImage(data: data) else { return }
+            await MainActor.run { cameraStore.previewImages[cameraId] = image }
+            Logger.camera.info("Successfully fetched camera preview image")
+        } catch {
+            Logger.camera.error("Failed to fetch preview image for \(cameraId): \(error.localizedDescription)")
+        }
+    }
+
     func callApi<Request: Encodable, Response: Decodable>(_ endpoint: CameraEndpoint, body: Request) async throws -> Response {
         try await mapCameraErrors {
             try await self.apiClient.request(endpoint: endpoint, body: body)

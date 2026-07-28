@@ -9,14 +9,13 @@ import SwiftUI
 
 struct SignupView: View {
     @State var signupViewModel: SignUpViewModel
+    @Environment(\.colorScheme) private var colorScheme
     
     init(signupViewModel: SignUpViewModel) {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue,
             .font: UIFont.systemFont(ofSize: 25, weight: .semibold)
         ]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         self.signupViewModel = signupViewModel
@@ -86,7 +85,7 @@ struct SignupView: View {
             .padding(.top)
             .navigationTitle("Create an Account")
             .navigationBarTitleDisplayMode(.inline)
-        
+            .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
         }
     }
     
