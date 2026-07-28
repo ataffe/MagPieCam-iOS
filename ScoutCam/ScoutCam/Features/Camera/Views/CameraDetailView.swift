@@ -12,6 +12,7 @@ struct CameraDetailView: View {
     let previewImage: UIImage?
     let cameraService: CameraService
     let rulesService: RulesService
+    let whepClient: WHEPClient
     @Environment(\.colorScheme) private var colorScheme
 
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
@@ -20,12 +21,14 @@ struct CameraDetailView: View {
         camera: Camera,
         previewImage: UIImage?,
         cameraService: CameraService,
-        rulesService: RulesService
+        rulesService: RulesService,
+        whepClient: WHEPClient
     ) {
         self.camera = camera
         self.previewImage = previewImage
         self.cameraService = cameraService
         self.rulesService = rulesService
+        self.whepClient = whepClient
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.systemBlue,
@@ -44,7 +47,12 @@ struct CameraDetailView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                NavigationLink(destination: CameraLiveVideoView(camera: camera))
+                NavigationLink(
+                    destination: CameraLiveVideoView(
+                        camera: camera,
+                        whepClient: whepClient
+                    )
+                )
                 {
                     if let previewImage {
                         CameraDetailPreviewCardView(
@@ -124,7 +132,8 @@ struct CameraDetailView: View {
             ),
             previewImage: nil,
             cameraService: dependencies.cameraService,
-            rulesService: dependencies.rulesService
+            rulesService: dependencies.rulesService,
+            whepClient: dependencies.whepClient
         )
     }
 }

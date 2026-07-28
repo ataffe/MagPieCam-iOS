@@ -11,12 +11,9 @@ import os
 
 struct CameraLiveVideoView: View {
     let camera: Camera
+    let whepClient: WHEPClient
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    @State private var whepClient = WHEPClient(
-        whepURL: URL(string: "http://10.0.0.53:8889/cam/whep")!
-    )
-
     private var isLandscape: Bool { verticalSizeClass == .compact }
 
     private var isConnected: Bool {
@@ -24,7 +21,7 @@ struct CameraLiveVideoView: View {
             || whepClient.connectionState == .completed
     }
 
-    init(camera: Camera) {
+    init(camera: Camera, whepClient: WHEPClient) {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .font: UIFont.systemFont(
@@ -35,6 +32,7 @@ struct CameraLiveVideoView: View {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         self.camera = camera
+        self.whepClient = whepClient
     }
 
     private func requestLandscape() {
@@ -132,6 +130,7 @@ struct RTCVideoView: UIViewRepresentable {
 
 #Preview {
     CameraLiveVideoView(
-        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil)
+        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil),
+        whepClient: AppDependencies().whepClient
     )
 }
