@@ -9,26 +9,34 @@ import SwiftUI
 
 struct CameraDetailView: View {
     let camera: Camera
+    let previewImage: UIImage?
     let cameraService: CameraService
     let rulesService: RulesService
     @Environment(\.colorScheme) private var colorScheme
 
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
-    
+
     init(
         camera: Camera,
+        previewImage: UIImage?,
         cameraService: CameraService,
         rulesService: RulesService
     ) {
         self.camera = camera
+        self.previewImage = previewImage
         self.cameraService = cameraService
         self.rulesService = rulesService
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.systemBlue,
-            .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold)
+            .font: UIFont.systemFont(
+                ofSize: Constants.UI.navTitleFontSize,
+                weight: .semibold
+            ),
         ]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.systemBlue]
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.systemBlue
+        ]
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
@@ -36,38 +44,57 @@ struct CameraDetailView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                NavigationLink(destination: CameraLiveVideoView(camera: camera)) {
-                    CameraDetailButton(image: Image(systemName: "video"))
-                    {Text("Go Live")}
-                        .foregroundStyle(Color.red)
-
-                }
-                NavigationLink(
-                    destination: NotificationRulesView(
-                        rulesViewModel: RulesViewModel(
-                            camera: camera,
-                            rulesService: rulesService
+                NavigationLink(destination: CameraLiveVideoView(camera: camera))
+                {
+                    if let previewImage {
+                        CameraDetailPreviewCardView(
+                            previewImage: previewImage,
+                            location: camera.location
                         )
-                    )
-                ) {
-                    CameraDetailButton(
-                        image: Image(
-                            "CatIconNoBackground"
-                        ),
-                        imageHeight: 80,
-                        buttonHeight: 140,
-                        buttonSpacing: 0,
-                        imageTextPadding: 5,
-                    ) {
-                        Text("Tell me what to look for!")
+                    } else {
+                        CameraDetailButton(image: Image(systemName: "video")) {
+                            Text("Go Live")
+                        }
+                        .foregroundStyle(Color.red)
                     }
                 }
-                CameraDetailButton(image: Image(systemName: "bell.fill")) {
-                    Text("Notifications")
+                ScrollView {
+                    NavigationLink(
+                        destination: NotificationRulesView(
+                            rulesViewModel: RulesViewModel(
+                                camera: camera,
+                                rulesService: rulesService
+                            )
+                        )
+                    ) {
+                        CameraDetailButton(
+                            image: Image(
+                                "CatIconNoBackground"
+                            ),
+                            imageHeight: 80,
+                            buttonHeight: 140,
+                            buttonSpacing: 0,
+                            imageTextPadding: 5,
+                        ) {
+                            Text("Tell me what to look for!")
+                        }
+                    }
+                    CameraDetailButton(image: Image(systemName: "bell.fill")) {
+                        Text("Notifications")
+                    }
+                    CameraDetailButton(
+                        image: Image(systemName: "chart.xyaxis.line")
+                    ) {
+                        Text("Stats")
+                    }
+                    Text("Recent Notifications")
+                        .font(.title2)
+                        .bold()
+                        .padding(.vertical)
+                    RecentNotificationView()
+                    
                 }
-                CameraDetailButton(image: Image(systemName: "chart.xyaxis.line")) {
-                    Text("Stats")
-            }
+
             }
             .navigationTitle(camera.location)
             .navigationBarTitleDisplayMode(.inline)
@@ -79,48 +106,10 @@ struct CameraDetailView: View {
                     .buttonStyle(.borderless)
                 }
             }
-            
-            Text("Recent Notifications")
-                .font(.title2)
-                .bold()
-                .padding(.vertical)
-            ScrollView {
-                RecentNotificationView()
-            }
         }
-        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
-    }
-    
-    struct CameraDetailButton<TEXT: View> : View {
-        let image: Image
-        var imageHeight: CGFloat? = nil
-        var buttonHeight: CGFloat = 130
-        var buttonSpacing: CGFloat? = nil
-        var imageTextPadding: CGFloat = 10
-        @ViewBuilder let text: TEXT
-
-        var body: some View {
-            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
-                .fill(.clear)
-            .frame(height: buttonHeight)
-            .overlay(
-                VStack(spacing: buttonSpacing) {
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: imageHeight)
-                    text
-                        .font(.title2)
-                        .bold()
-                        .foregroundStyle(Color.primary)
-                        .padding(.top, imageTextPadding)
-                }
-                .padding()
-            )
-            .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
-            .padding(.vertical, 3)
-            .padding(.horizontal)
-        }
+        .background(
+            Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
+        )
     }
 }
 
@@ -130,8 +119,10 @@ struct CameraDetailView: View {
         CameraDetailView(
             camera: Camera(
                 id: "cam-preview-001",
-                location: "living room".capitalized
+                location: "living room".capitalized,
+                cameraPreviewUrl: nil
             ),
+            previewImage: nil,
             cameraService: dependencies.cameraService,
             rulesService: dependencies.rulesService
         )

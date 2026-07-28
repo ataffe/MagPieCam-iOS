@@ -67,6 +67,7 @@ struct CameraLiveVideoView: View {
                                     .foregroundStyle(.white)
                                     .padding(8)
                                     .background(.ultraThinMaterial, in: Circle())
+                                    .font(.largeTitle)
                             }
                             .padding(12)
                         }
@@ -130,5 +131,7 @@ struct RTCVideoView: UIViewRepresentable {
 }
 
 #Preview {
-    CameraLiveVideoView(camera: Camera(id: "testId", location: "Office"))
+    CameraLiveVideoView(
+        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil)
+    )
 }

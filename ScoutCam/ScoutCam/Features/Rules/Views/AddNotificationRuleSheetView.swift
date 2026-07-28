@@ -111,7 +111,7 @@ struct AddNotificationRuleSheetView: View {
 
 #Preview {
     let deps = AppDependencies()
-    let camera = Camera(id: "123", location: "Kitchen")
+    let camera = Camera(id: "123", location: "Kitchen", cameraPreviewUrl: nil)
     AddNotificationRuleSheetView(
         rulesViewModel: RulesViewModel(
             camera: camera,

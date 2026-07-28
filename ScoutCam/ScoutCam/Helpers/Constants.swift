@@ -21,6 +21,8 @@ enum Constants {
         static let cardShadowRadius: CGFloat = 4
         static let cardShadowY: CGFloat = 2
         static let cardShadowOpacity: Double = 0.08
+        static let cameraPreviewCardHeight: CGFloat = 200
+        static let cameraPreviewLocationFont: Font = .title2
 
         static func backgroundGradient(for colorScheme: ColorScheme) -> LinearGradient {
             colorScheme == .dark
