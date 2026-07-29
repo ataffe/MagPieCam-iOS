@@ -40,7 +40,8 @@ struct CamerasHomeView: View {
                             previewImage: dependencies.cameraStore
                                 .previewImages[camera.id],
                             cameraService: dependencies.cameraService,
-                            rulesService: dependencies.rulesService
+                            rulesService: dependencies.rulesService,
+                            whepClient: dependencies.whepClient
                         )
                     ) {
                         CameraHomeCardView(

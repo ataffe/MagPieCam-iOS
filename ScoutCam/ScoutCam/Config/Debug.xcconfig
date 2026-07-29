@@ -9,3 +9,4 @@
 // https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
 
 API_BASE_URL = http:/$()/10.0.0.126:8000/v1/
+WHEP_URL = http:/$()/10.0.0.126:8889/cam/whep

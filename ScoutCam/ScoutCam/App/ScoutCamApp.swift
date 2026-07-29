@@ -16,6 +16,19 @@ enum AppConfig {
         print("Base Url: \(urlString)")
         return url
     }
+    
+    static var whepUrl: URL {
+        guard let urlString = Bundle.main.object(forInfoDictionaryKey: "WHEP_URL") as? String
+        else {
+            fatalError("Unable to get webrtc url.")
+        }
+                
+        guard let url = URL(string: urlString) else {
+            fatalError("WEBRTC_URL missing or invalid in Info.plist")
+        }
+        print("WHEP Url: \(urlString)")
+        return url
+    }
 }
 
 @main

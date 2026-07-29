@@ -11,11 +11,10 @@ import os
 
 struct CameraLiveVideoView: View {
     let camera: Camera
+    let whepClient: WHEPClient
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    @State private var whepClient = WHEPClient(
-        whepURL: URL(string: "http://10.0.0.53:8889/cam/whep")!
-    )
+    @State private var isTimedOut = false
 
     private var isLandscape: Bool { verticalSizeClass == .compact }
 
@@ -24,7 +23,7 @@ struct CameraLiveVideoView: View {
             || whepClient.connectionState == .completed
     }
 
-    init(camera: Camera) {
+    init(camera: Camera, whepClient: WHEPClient) {
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .font: UIFont.systemFont(
@@ -35,6 +34,7 @@ struct CameraLiveVideoView: View {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         self.camera = camera
+        self.whepClient = whepClient
     }
 
     private func requestLandscape() {
@@ -98,13 +98,29 @@ struct CameraLiveVideoView: View {
             }
 
             if !isConnected {
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .tint(isLandscape ? .white : .primary)
-                        .scaleEffect(1.5)
-                    Text("Connecting to \(camera.location)...")
-                        .foregroundStyle(isLandscape ? .white : .primary)
-                        .font(.subheadline)
+                if isTimedOut {
+                    VStack(spacing: 16) {
+                        Image(systemName: "wifi.slash")
+                            .font(.system(size: 48))
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                        Text("Camera Offline")
+                            .font(.headline)
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                        Text("It looks like \(camera.location) is offline right now.")
+                            .font(.subheadline)
+                            .foregroundStyle(isLandscape ? .white.opacity(0.8) : .secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                } else {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .tint(isLandscape ? .white : .primary)
+                            .scaleEffect(1.5)
+                        Text("Connecting to \(camera.location)...")
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                            .font(.subheadline)
+                    }
                 }
             }
         }
@@ -113,6 +129,10 @@ struct CameraLiveVideoView: View {
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
         .onAppear { whepClient.connect() }
         .onDisappear { whepClient.disconnect() }
+        .task {
+            try? await Task.sleep(for: .seconds(30))
+            if !isConnected { isTimedOut = true }
+        }
     }
 }
 
@@ -132,6 +152,7 @@ struct RTCVideoView: UIViewRepresentable {
 
 #Preview {
     CameraLiveVideoView(
-        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil)
+        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil),
+        whepClient: AppDependencies().whepClient
     )
 }
