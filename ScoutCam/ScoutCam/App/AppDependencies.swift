@@ -38,6 +38,9 @@ final class AppDependencies {
             await apiClient.setTokenProvider {
                 try await authService.validAccessToken()
             }
+            whepClient.tokenProvider = {
+                try await authService.validAccessToken()
+            }
         }
     }
 }

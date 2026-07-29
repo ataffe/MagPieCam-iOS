@@ -14,6 +14,8 @@ struct CameraLiveVideoView: View {
     let whepClient: WHEPClient
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var isTimedOut = false
+
     private var isLandscape: Bool { verticalSizeClass == .compact }
 
     private var isConnected: Bool {
@@ -96,13 +98,29 @@ struct CameraLiveVideoView: View {
             }
 
             if !isConnected {
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .tint(isLandscape ? .white : .primary)
-                        .scaleEffect(1.5)
-                    Text("Connecting to \(camera.location)...")
-                        .foregroundStyle(isLandscape ? .white : .primary)
-                        .font(.subheadline)
+                if isTimedOut {
+                    VStack(spacing: 16) {
+                        Image(systemName: "wifi.slash")
+                            .font(.system(size: 48))
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                        Text("Camera Offline")
+                            .font(.headline)
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                        Text("It looks like \(camera.location) is offline right now.")
+                            .font(.subheadline)
+                            .foregroundStyle(isLandscape ? .white.opacity(0.8) : .secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                } else {
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .tint(isLandscape ? .white : .primary)
+                            .scaleEffect(1.5)
+                        Text("Connecting to \(camera.location)...")
+                            .foregroundStyle(isLandscape ? .white : .primary)
+                            .font(.subheadline)
+                    }
                 }
             }
         }
@@ -111,6 +129,10 @@ struct CameraLiveVideoView: View {
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
         .onAppear { whepClient.connect() }
         .onDisappear { whepClient.disconnect() }
+        .task {
+            try? await Task.sleep(for: .seconds(30))
+            if !isConnected { isTimedOut = true }
+        }
     }
 }
 

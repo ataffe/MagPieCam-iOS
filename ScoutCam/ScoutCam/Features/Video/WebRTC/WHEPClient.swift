@@ -25,10 +25,10 @@ final class WHEPClient: NSObject {
 
     var remoteVideoTrack: RTCVideoTrack?
     var connectionState: RTCIceConnectionState = .new
- 
+    var tokenProvider: (() async throws -> String?)?
+
     private let whepURL: URL
-    private let bearerToken: String?
- 
+
     // The factory is expensive to create, so it's shared across connections,
     // per stasel's own demo app.
     private static let factory: RTCPeerConnectionFactory = {
@@ -37,12 +37,11 @@ final class WHEPClient: NSObject {
         let decoder = RTCDefaultVideoDecoderFactory()
         return RTCPeerConnectionFactory(encoderFactory: encoder, decoderFactory: decoder)
     }()
- 
+
     private var peerConnection: RTCPeerConnection?
- 
-    init(whepURL: URL, bearerToken: String? = nil) {
+
+    init(whepURL: URL) {
         self.whepURL = whepURL
-        self.bearerToken = bearerToken
     }
  
     func connect() {
@@ -101,30 +100,34 @@ final class WHEPClient: NSObject {
     }
  
     private func postOffer(_ localSDP: RTCSessionDescription) {
-        var request = URLRequest(url: whepURL)
-        request.httpMethod = "POST"
-        request.setValue("application/sdp", forHTTPHeaderField: "Content-Type")
-        if let token = bearerToken {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
-        request.httpBody = localSDP.sdp.data(using: .utf8)
- 
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+        Task { [weak self] in
             guard let self else { return }
-            guard let data,
-                  let sdpAnswer = String(data: data, encoding: .utf8),
-                  let http = response as? HTTPURLResponse,
-                  (200..<300).contains(http.statusCode) else {
-                Logger.whepClient.error("WHEP: server rejected offer: \(error?.localizedDescription ?? "bad response")")
-                return
+            var request = URLRequest(url: whepURL)
+            request.httpMethod = "POST"
+            request.setValue("application/sdp", forHTTPHeaderField: "Content-Type")
+            if let token = try? await tokenProvider?() {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
-            let answer = RTCSessionDescription(type: .answer, sdp: sdpAnswer)
-            self.peerConnection?.setRemoteDescription(answer) { error in
-                if let error {
-                    Logger.whepClient.error("WHEP: setRemoteDescription failed: \(error.localizedDescription)")
+            request.httpBody = localSDP.sdp.data(using: .utf8)
+
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let sdpAnswer = String(data: data, encoding: .utf8),
+                      let http = response as? HTTPURLResponse,
+                      (200..<300).contains(http.statusCode) else {
+                    Logger.whepClient.error("WHEP: server rejected offer")
+                    return
                 }
+                let answer = RTCSessionDescription(type: .answer, sdp: sdpAnswer)
+                self.peerConnection?.setRemoteDescription(answer) { error in
+                    if let error {
+                        Logger.whepClient.error("WHEP: setRemoteDescription failed: \(error.localizedDescription)")
+                    }
+                }
+            } catch {
+                Logger.whepClient.error("WHEP: post offer failed: \(error.localizedDescription)")
             }
-        }.resume()
+        }
     }
  
     func disconnect() {
