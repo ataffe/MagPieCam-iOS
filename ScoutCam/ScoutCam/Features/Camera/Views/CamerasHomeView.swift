@@ -17,12 +17,6 @@ struct CamerasHomeView: View {
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     init(cameraService: CameraService) {
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold)
-        ]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
         cameraHomeViewModel = CameraHomeViewModel(cameraService: cameraService)
     }
 
@@ -34,16 +28,7 @@ struct CamerasHomeView: View {
             }
             ScrollView {
                 ForEach(cameras) { camera in
-                    NavigationLink(
-                        destination: CameraDetailView(
-                            camera: camera,
-                            previewImage: dependencies.cameraStore
-                                .previewImages[camera.id],
-                            cameraService: dependencies.cameraService,
-                            rulesService: dependencies.rulesService,
-                            whepClient: dependencies.whepClient
-                        )
-                    ) {
+                    NavigationLink(destination: CameraDetailView(camera: camera)) {
                         CameraHomeCardView(
                             camera: camera,
                             previewImage: dependencies.cameraStore.previewImages[camera.id]

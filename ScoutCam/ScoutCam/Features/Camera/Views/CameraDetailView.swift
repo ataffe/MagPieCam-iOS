@@ -9,115 +9,92 @@ import SwiftUI
 
 struct CameraDetailView: View {
     let camera: Camera
-    let previewImage: UIImage?
-    let cameraService: CameraService
-    let rulesService: RulesService
-    let whepClient: WHEPClient
+    @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
 
-    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+    private let actionColumns = [GridItem(.flexible()), GridItem(.flexible())]
 
-    init(
-        camera: Camera,
-        previewImage: UIImage?,
-        cameraService: CameraService,
-        rulesService: RulesService,
-        whepClient: WHEPClient
-    ) {
-        self.camera = camera
-        self.previewImage = previewImage
-        self.cameraService = cameraService
-        self.rulesService = rulesService
-        self.whepClient = whepClient
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue,
-            .font: UIFont.systemFont(
-                ofSize: Constants.UI.navTitleFontSize,
-                weight: .semibold
-            ),
-        ]
-        appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor.systemBlue
-        ]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    private var previewImage: UIImage? {
+        dependencies.cameraStore.previewImages[camera.id]
     }
 
     var body: some View {
-        NavigationStack {
-            VStack {
-                NavigationLink(
-                    destination: CameraLiveVideoView(
-                        camera: camera,
-                        whepClient: whepClient
-                    )
-                )
-                {
-                    if let previewImage {
-                        CameraDetailPreviewCardView(
-                            previewImage: previewImage,
-                            location: camera.location
-                        )
-                    } else {
-                        CameraDetailButton(image: Image(systemName: "video")) {
-                            Text("Go Live")
-                        }
-                        .foregroundStyle(Color.red)
-                    }
-                }
-                ScrollView {
-                    NavigationLink(
-                        destination: NotificationRulesView(
-                            rulesViewModel: RulesViewModel(
-                                camera: camera,
-                                rulesService: rulesService
-                            )
-                        )
-                    ) {
-                        CameraDetailButton(
-                            image: Image(
-                                "CatIconNoBackground"
-                            ),
-                            imageHeight: 80,
-                            buttonHeight: 140,
-                            buttonSpacing: 0,
-                            imageTextPadding: 5,
-                        ) {
-                            Text("Tell me what to look for!")
-                        }
-                    }
-                    CameraDetailButton(image: Image(systemName: "bell.fill")) {
-                        Text("Notifications")
-                    }
-                    CameraDetailButton(
-                        image: Image(systemName: "chart.xyaxis.line")
-                    ) {
-                        Text("Stats")
-                    }
-                    Text("Recent Notifications")
-                        .font(.title2)
-                        .bold()
-                        .padding(.vertical)
-                    RecentNotificationView()
-                    
-                }
-
+        ScrollView {
+            VStack(spacing: 16) {
+                liveViewCard
+                actionGrid
+                recentNotificationsSection
             }
-            .navigationTitle(camera.location)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Settings", systemImage: "gearshape.fill") {
-                        print("Setting sheet")
-                    }
-                    .buttonStyle(.borderless)
+            .padding(.bottom)
+        }
+        .navigationTitle(camera.location)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Settings", systemImage: "gearshape.fill") {
+                    print("Settings sheet")
                 }
+                .buttonStyle(.borderless)
             }
         }
-        .background(
-            Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
-        )
+        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
+    }
+
+    // MARK: - Sections
+
+    private var liveViewCard: some View {
+        NavigationLink(
+            destination: CameraStreamingView(camera: camera)
+        ) {
+            if let previewImage {
+                CameraDetailPreviewCardView(previewImage: previewImage, location: camera.location)
+            } else {
+                CameraDetailButton(image: Image(systemName: "video")) {
+                    Text("Go Live")
+                }
+                .foregroundStyle(.red)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var actionGrid: some View {
+        LazyVGrid(columns: actionColumns, spacing: 12) {
+            NavigationLink(
+                destination: NotificationRulesView(
+                    rulesViewModel: RulesViewModel(
+                        camera: camera,
+                        rulesService: dependencies.rulesService
+                    )
+                )
+            ) {
+                CameraDetailButton(
+                    image: Image(systemName: "sparkle.text.clipboard")) {
+                    Text("Smart Alerts")
+                }
+            }
+            .buttonStyle(.plain)
+
+            CameraDetailButton(image: Image(systemName: "bell.fill")) {
+                Text("Notifications")
+            }
+
+            CameraDetailButton(image: Image(systemName: "chart.xyaxis.line")) {
+                Text("Stats")
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private var recentNotificationsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recent Notifications")
+                .font(.title2)
+                .bold()
+                .padding(.horizontal)
+            RecentNotificationView()
+        }
+        .padding(.vertical)
     }
 }
 
@@ -125,15 +102,8 @@ struct CameraDetailView: View {
     let dependencies = AppDependencies()
     NavigationStack {
         CameraDetailView(
-            camera: Camera(
-                id: "cam-preview-001",
-                location: "living room".capitalized,
-                cameraPreviewUrl: nil
-            ),
-            previewImage: nil,
-            cameraService: dependencies.cameraService,
-            rulesService: dependencies.rulesService,
-            whepClient: dependencies.whepClient
+            camera: Camera(id: "cam-preview-001", location: "Living Room", cameraPreviewUrl: nil)
         )
     }
+    .environment(dependencies)
 }
