@@ -9,7 +9,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class CameraLiveVideoViewModel {
+final class CameraStreamingViewModel {
     let videoUrl: URL
     
     init(videoUrl: String) {

@@ -9,9 +9,10 @@ import SwiftUI
 import WebRTC
 import os
 
-struct CameraLiveVideoView: View {
+struct CameraStreamingView: View {
     let camera: Camera
-    let whepClient: WHEPClient
+    @State private var whepClient: WHEPClient
+    @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var isTimedOut = false
@@ -23,18 +24,9 @@ struct CameraLiveVideoView: View {
             || whepClient.connectionState == .completed
     }
 
-    init(camera: Camera, whepClient: WHEPClient) {
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(
-                ofSize: Constants.UI.navTitleFontSize,
-                weight: .semibold
-            ),
-        ]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    init(camera: Camera) {
         self.camera = camera
-        self.whepClient = whepClient
+        _whepClient = State(initialValue: WHEPClient(whepURL: AppConfig.whepUrl(for: camera.id)))
     }
 
     private func requestLandscape() {
@@ -98,7 +90,7 @@ struct CameraLiveVideoView: View {
             }
 
             if !isConnected {
-                if isTimedOut {
+                if isTimedOut || whepClient.isOffline {
                     VStack(spacing: 16) {
                         Image(systemName: "wifi.slash")
                             .font(.system(size: 48))
@@ -127,7 +119,15 @@ struct CameraLiveVideoView: View {
         .navigationTitle("\(camera.location) Live View")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(isLandscape ? .hidden : .visible, for: .navigationBar)
-        .onAppear { whepClient.connect() }
+        .onAppear {
+            whepClient.tokenProvider = { [dependencies] in
+                try await dependencies.authService.validAccessToken()
+            }
+            Task {
+                try? await dependencies.streamingService.start(cameraId: camera.id)
+                whepClient.connect()
+            }
+        }
         .onDisappear { whepClient.disconnect() }
         .task {
             try? await Task.sleep(for: .seconds(30))
@@ -151,8 +151,8 @@ struct RTCVideoView: UIViewRepresentable {
 }
 
 #Preview {
-    CameraLiveVideoView(
-        camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil),
-        whepClient: AppDependencies().whepClient
-    )
+    NavigationStack {
+        CameraStreamingView(camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil))
+    }
+    .environment(AppDependencies())
 }

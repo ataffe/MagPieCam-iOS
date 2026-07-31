@@ -12,12 +12,6 @@ struct SignupView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     init(signupViewModel: SignUpViewModel) {
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: 25, weight: .semibold)
-        ]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
         self.signupViewModel = signupViewModel
     }
 

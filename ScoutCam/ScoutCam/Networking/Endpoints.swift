@@ -70,13 +70,29 @@ enum RuleEndpoint: ApiEndpoint {
             "cameras/\(cameraId)/rules/\(ruleId)/"
         }
     }
-    
+
     var method: HTTPMethod {
         switch self {
         case .getRules: .get
         case .addRule: .post
         case .updateRule: .put
         case .deleteRule: .delete
+        }
+    }
+}
+
+enum StreamingEndpoint: ApiEndpoint {
+    case start(cameraId: String)
+
+    var path: String {
+        switch self {
+        case .start(let cameraId): "cameras/\(cameraId)/streaming/start/"
+        }
+    }
+
+    var method: HTTPMethod {
+        switch self {
+        case .start: .post
         }
     }
 }

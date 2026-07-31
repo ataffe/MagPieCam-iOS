@@ -13,12 +13,6 @@ struct NotificationRulesView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     init(rulesViewModel: RulesViewModel) {
-        let appearance = UINavigationBarAppearance()
-        appearance.titleTextAttributes = [
-            .font: UIFont.systemFont(ofSize: Constants.UI.navTitleFontSize, weight: .semibold),
-        ]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
         self.rulesViewModel = rulesViewModel
     }
 
@@ -51,7 +45,7 @@ struct NotificationRulesView: View {
             }
             .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
             .task { await rulesViewModel.getCameraRules() }
-            .navigationTitle("\(rulesViewModel.camera.location) Notification Rules")
+            .navigationTitle("\(rulesViewModel.camera.location) Smart Alerts")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $isShowingAddRule) {
                 AddNotificationRuleSheetView(rulesViewModel: rulesViewModel)
