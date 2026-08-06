@@ -37,7 +37,9 @@ struct CameraDetailView: View {
                 .buttonStyle(.borderless)
             }
         }
-        .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
+        .background(
+            Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
+        )
     }
 
     // MARK: - Sections
@@ -47,7 +49,10 @@ struct CameraDetailView: View {
             destination: CameraStreamingView(camera: camera)
         ) {
             if let previewImage {
-                CameraDetailPreviewCardView(previewImage: previewImage, location: camera.location)
+                CameraDetailPreviewCardView(
+                    previewImage: previewImage,
+                    location: camera.location
+                )
             } else {
                 CameraDetailButton(image: Image(systemName: "video")) {
                     Text("Go Live")
@@ -69,17 +74,25 @@ struct CameraDetailView: View {
                 )
             ) {
                 CameraDetailButton(
-                    image: Image(systemName: "sparkle.text.clipboard")) {
+                    image: Image(systemName: "sparkle.text.clipboard"),
+                    imageColor: Color.blue
+                ) {
                     Text("Smart Alerts")
                 }
             }
             .buttonStyle(.plain)
 
-            CameraDetailButton(image: Image(systemName: "bell.fill")) {
+            CameraDetailButton(
+                image: Image(systemName: "bell.fill"),
+                imageColor: Color.yellow
+            ) {
                 Text("Notifications")
             }
 
-            CameraDetailButton(image: Image(systemName: "chart.xyaxis.line")) {
+            CameraDetailButton(
+                image: Image(systemName: "chart.xyaxis.line"),
+                imageColor: Color.green
+            ) {
                 Text("Stats")
             }
         }
@@ -102,7 +115,11 @@ struct CameraDetailView: View {
     let dependencies = AppDependencies()
     NavigationStack {
         CameraDetailView(
-            camera: Camera(id: "cam-preview-001", location: "Living Room", cameraPreviewUrl: nil)
+            camera: Camera(
+                id: "cam-preview-001",
+                location: "Living Room",
+                cameraPreviewUrl: nil
+            )
         )
     }
     .environment(dependencies)

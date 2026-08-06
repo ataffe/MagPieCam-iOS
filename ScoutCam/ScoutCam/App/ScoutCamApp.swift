@@ -34,6 +34,7 @@ enum AppConfig {
 
 @main
 struct ScoutCamApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var dependencies = AppDependencies()
 
     init() {

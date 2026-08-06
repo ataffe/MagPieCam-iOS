@@ -76,6 +76,11 @@ actor ApiClient {
         return try decode(data)
     }
     
+    // For request body but no response body
+    func request<Body: Encodable>(endpoint: any ApiEndpoint, body: Body) async throws {
+        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body))
+    }
+
     // For no request or response body
     func request(_ endpoint: any ApiEndpoint) async throws {
         _ = try await execute(endpoint.path, method: endpoint.method, bodyData: nil)

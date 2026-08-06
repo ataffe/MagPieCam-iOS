@@ -31,7 +31,7 @@ enum Constants {
                     startPoint: .top, endPoint: .bottom
                   )
                 : LinearGradient(
-                    colors: [.white, Color.blue.opacity(0.25)],
+                    colors: [.white, Color.blue.opacity(0.50)],
                     startPoint: .top, endPoint: .bottom
                   )
         }
