@@ -68,6 +68,10 @@ actor AuthService {
         let refresh: String
     }
     
+    struct ApnsTokenRequest: Encodable {
+        let apnsDeviceId: String
+    }
+    
     enum TokenKey {
         static let accessToken = "accessToken"
         static let refreshToken = "refreshToken"
@@ -225,6 +229,18 @@ actor AuthService {
         keychainStore.delete(TokenKey.refreshToken)
         await apiClient.deleteAuthToken()
         await MainActor.run { authState.status = .signedOut }
+    }
+
+    func updateApnsToken(_ token: String) async {
+        do {
+            try await apiClient.request(
+                endpoint: UserEndpoint.updateApnsToken,
+                body: ApnsTokenRequest(apnsDeviceId: token)
+            )
+            Logger.auth.info("APNS token uploaded successfully.")
+        } catch {
+            Logger.auth.error("Failed to upload APNS token: \(error.localizedDescription)")
+        }
     }
 
     func logOut() async {

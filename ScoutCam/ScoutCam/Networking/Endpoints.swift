@@ -96,3 +96,19 @@ enum StreamingEndpoint: ApiEndpoint {
         }
     }
 }
+
+enum UserEndpoint: ApiEndpoint {
+    case updateApnsToken
+    
+    var path: String {
+        switch self {
+        case .updateApnsToken: "users/apns_token/"
+        }
+    }
+    
+    var method: HTTPMethod {
+        switch self {
+        case .updateApnsToken: .post
+        }
+    }
+}

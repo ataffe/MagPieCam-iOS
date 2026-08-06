@@ -6,9 +6,6 @@ iOS Application for the Scout camera system.
 
 ### Brief Overview
 
-[Scout Cam Event Processor](https://github.com/ataffe/GuardianCamCameraClient) - Processes images received from cameras and send users a push notification if the 
-image matches one or more of the users rules.
-
 [Scout Cam Camera Client](https://github.com/ataffe/GuardianCamCameraClient) - Detects Motion and filters images using object detection and then sends the image to the 
 event processor if an object is detected.
 

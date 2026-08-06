@@ -79,7 +79,8 @@ struct AddNotificationRuleSheetView: View {
                 isSaving = true
                 Task {
                     do {
-                        try await rulesViewModel.addRule(nickname: nickname, rule: fullRule)
+                        try await rulesViewModel
+                            .addRule(nickname: nickname, rule: ruleSuffix)
                         dismiss()
                     } catch {
                         // TODO: show error
