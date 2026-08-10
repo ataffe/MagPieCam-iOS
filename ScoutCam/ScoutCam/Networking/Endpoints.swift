@@ -10,6 +10,11 @@ import Foundation
 protocol ApiEndpoint {
     var path: String { get }
     var method: HTTPMethod { get }
+    var queryItems: [URLQueryItem] { get }
+}
+
+extension ApiEndpoint {
+    var queryItems: [URLQueryItem] { [] }
 }
 
 enum AuthEndpoint: ApiEndpoint {
@@ -109,6 +114,26 @@ enum UserEndpoint: ApiEndpoint {
     var method: HTTPMethod {
         switch self {
         case .updateApnsToken: .post
+        }
+    }
+}
+
+enum NotificationsEndpoint: ApiEndpoint {
+    case getNotifications(cameraId: String, cursor: String? = nil)
+
+    var path: String {
+        switch self {
+        case .getNotifications(let cameraId, _): "cameras/\(cameraId)/notifications/"
+        }
+    }
+
+    var method: HTTPMethod { .get }
+
+    var queryItems: [URLQueryItem] {
+        switch self {
+        case .getNotifications(_, let cursor):
+            guard let cursor else { return [] }
+            return [URLQueryItem(name: "cursor", value: cursor)]
         }
     }
 }

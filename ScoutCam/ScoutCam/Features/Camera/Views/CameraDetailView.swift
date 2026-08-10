@@ -11,6 +11,7 @@ struct CameraDetailView: View {
     let camera: Camera
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
+    @State private var notificationsViewModel: RecentNotificationsViewModel?
 
     private let actionColumns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -40,6 +41,15 @@ struct CameraDetailView: View {
         .background(
             Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
         )
+        .task {
+            guard notificationsViewModel == nil else { return }
+            let vm = RecentNotificationsViewModel(
+                cameraId: camera.id,
+                notificationService: dependencies.notificationService
+            )
+            notificationsViewModel = vm
+            await vm.loadInitial()
+        }
     }
 
     // MARK: - Sections
@@ -105,7 +115,13 @@ struct CameraDetailView: View {
                 .font(.title2)
                 .bold()
                 .padding(.horizontal)
-            RecentNotificationView()
+            if let notificationsViewModel {
+                RecentNotificationView(viewModel: notificationsViewModel)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            }
         }
         .padding(.vertical)
     }
