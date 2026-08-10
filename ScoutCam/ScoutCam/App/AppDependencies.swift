@@ -14,6 +14,7 @@ final class AppDependencies {
     let cameraService: CameraService
     let rulesService: RulesService
     let streamingService: StreamingService
+    let notificationService: NotificationService
     let authState: AuthState
     let cameraStore: CameraStore
 
@@ -29,6 +30,7 @@ final class AppDependencies {
         self.cameraService = CameraService(apiClient: apiClient, cameraStore: cameraStore)
         self.rulesService = RulesService(apiClient: apiClient)
         self.streamingService = StreamingService(apiClient: apiClient)
+        self.notificationService = NotificationService(apiClient: apiClient)
 
         // Wire the token provider after both objects exist.
         // ApiClient will call this before every authenticated request,

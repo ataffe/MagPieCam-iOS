@@ -63,27 +63,27 @@ actor ApiClient {
     func request<Response: Decodable>(
         _ endpoint: any ApiEndpoint
     ) async throws -> Response {
-        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: nil)
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: nil, queryItems: endpoint.queryItems)
         return try decode(data)
     }
-    
+
     // For request body and response
     func request<Body: Encodable, Response: Decodable>(
         endpoint: any ApiEndpoint,
         body: Body
     ) async throws -> Response {
-        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body))
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body), queryItems: endpoint.queryItems)
         return try decode(data)
     }
-    
+
     // For request body but no response body
     func request<Body: Encodable>(endpoint: any ApiEndpoint, body: Body) async throws {
-        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body))
+        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body), queryItems: endpoint.queryItems)
     }
 
     // For no request or response body
     func request(_ endpoint: any ApiEndpoint) async throws {
-        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: nil)
+        _ = try await execute(endpoint.path, method: endpoint.method, bodyData: nil, queryItems: endpoint.queryItems)
     }
 
     // Used for requests that must not trigger the token provider (e.g. the refresh call itself).
@@ -91,7 +91,7 @@ actor ApiClient {
         endpoint: any ApiEndpoint,
         body: Body
     ) async throws -> Response {
-        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body), skipAuth: true)
+        let data = try await execute(endpoint.path, method: endpoint.method, bodyData: encode(body), queryItems: endpoint.queryItems, skipAuth: true)
         return try decode(data)
     }
 
@@ -119,9 +119,14 @@ actor ApiClient {
         _ endpoint: String,
         method: HTTPMethod,
         bodyData: Data?,
+        queryItems: [URLQueryItem] = [],
         skipAuth: Bool = false
     ) async throws -> Data {
-        var urlRequest = URLRequest(url: baseUrl.appendingPathComponent(endpoint))
+        let baseURL = baseUrl.appendingPathComponent(endpoint)
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)
+        if !queryItems.isEmpty { components?.queryItems = queryItems }
+        guard let url = components?.url else { throw APIError.invalidResponse }
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method.rawValue
         if let bodyData {
             urlRequest.httpBody = bodyData
