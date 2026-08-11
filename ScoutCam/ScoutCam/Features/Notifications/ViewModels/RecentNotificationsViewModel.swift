@@ -39,6 +39,29 @@ final class RecentNotificationsViewModel {
         isLoading = false
     }
 
+    func dismiss(id: String) {
+        notifications.removeAll { $0.publicNotificationId == id }
+        Task {
+            do {
+                try await notificationService.clearNotifications(cameraId: cameraId, ids: [id])
+            } catch {
+                Logger.notifications.error("Failed to clear notification \(id): \(error)")
+            }
+        }
+    }
+
+    func clearAll() {
+        let ids = notifications.map(\.publicNotificationId)
+        notifications.removeAll()
+        Task {
+            do {
+                try await notificationService.clearNotifications(cameraId: cameraId, ids: ids)
+            } catch {
+                Logger.notifications.error("Failed to clear all notifications: \(error)")
+            }
+        }
+    }
+
     func loadNextPageIfNeeded(currentId: String) async {
         guard currentId == notifications.last?.publicNotificationId,
               hasMore, !isLoading else { return }

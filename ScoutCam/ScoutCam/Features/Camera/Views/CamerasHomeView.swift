@@ -101,12 +101,14 @@ struct CamerasHomeView: View {
         Camera(
             id: "cam-preview-001",
             location: "Front Door",
-            cameraPreviewUrl: nil
+            cameraPreviewUrl: nil,
+            previewUpdatedAt: nil
         ),
         Camera(
             id: "cam-preview-002",
             location: "Backyard",
-            cameraPreviewUrl: nil
+            cameraPreviewUrl: nil,
+            previewUpdatedAt: nil
         ),
     ]
     return CamerasHomeView(cameraService: deps.cameraService)

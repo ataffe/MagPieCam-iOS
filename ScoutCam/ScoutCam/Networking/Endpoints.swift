@@ -120,20 +120,28 @@ enum UserEndpoint: ApiEndpoint {
 
 enum NotificationsEndpoint: ApiEndpoint {
     case getNotifications(cameraId: String, cursor: String? = nil)
+    case clearNotifications(cameraId: String)
 
     var path: String {
         switch self {
         case .getNotifications(let cameraId, _): "cameras/\(cameraId)/notifications/"
+        case .clearNotifications(let cameraId): "cameras/\(cameraId)/notifications/clear/"
         }
     }
 
-    var method: HTTPMethod { .get }
+    var method: HTTPMethod {
+        switch self {
+        case .getNotifications: .get
+        case .clearNotifications: .post
+        }
+    }
 
     var queryItems: [URLQueryItem] {
         switch self {
         case .getNotifications(_, let cursor):
             guard let cursor else { return [] }
             return [URLQueryItem(name: "cursor", value: cursor)]
+        case .clearNotifications(_): return []
         }
     }
 }

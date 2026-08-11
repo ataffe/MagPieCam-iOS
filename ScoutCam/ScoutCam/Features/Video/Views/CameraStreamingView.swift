@@ -152,7 +152,7 @@ struct RTCVideoView: UIViewRepresentable {
 
 #Preview {
     NavigationStack {
-        CameraStreamingView(camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil))
+        CameraStreamingView(camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil, previewUpdatedAt: nil))
     }
     .environment(AppDependencies())
 }

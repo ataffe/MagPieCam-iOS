@@ -87,7 +87,7 @@ struct NotificationRulesView: View {
 }
 
 #Preview {
-    let camera = Camera(id: "123", location: "Kitchen", cameraPreviewUrl: nil)
+    let camera = Camera(id: "123", location: "Kitchen", cameraPreviewUrl: nil, previewUpdatedAt: nil)
     let rulesViewModel = RulesViewModel(
         camera: camera,
         rulesService: AppDependencies().rulesService,

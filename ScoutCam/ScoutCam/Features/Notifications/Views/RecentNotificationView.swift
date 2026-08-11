@@ -16,10 +16,12 @@ struct RecentNotificationView: View {
                 emptyState
             } else {
                 ForEach(viewModel.notifications, id: \.publicNotificationId) { notification in
-                    NotificationRow(notification: notification)
-                        .onAppear {
-                            Task { await viewModel.loadNextPageIfNeeded(currentId: notification.publicNotificationId) }
-                        }
+                    NotificationRow(notification: notification) {
+                        viewModel.dismiss(id: notification.publicNotificationId)
+                    }
+                    .onAppear {
+                        Task { await viewModel.loadNextPageIfNeeded(currentId: notification.publicNotificationId) }
+                    }
                 }
                 if viewModel.isLoading {
                     ProgressView()
@@ -50,7 +52,11 @@ struct RecentNotificationView: View {
 
 private struct NotificationRow: View {
     let notification: NotificationResponse
+    let onDismiss: () -> Void
 
+    @State private var offset: CGFloat = 0
+
+    private static let dismissThreshold: CGFloat = -120
     private static let isoFormatter: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -63,31 +69,92 @@ private struct NotificationRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "bell.fill")
-                .font(.title2)
-                .foregroundStyle(.blue)
-                .frame(width: 32)
+        ZStack(alignment: .trailing) {
+            RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius)
+                .fill(.red)
+                .overlay(alignment: .trailing) {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.white)
+                        .font(.title3)
+                        .padding(.trailing, 20)
+                }
+                .opacity(offset < 0 ? 1 : 0)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(notification.ruleNickname)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                Text("Rule triggered")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 14) {
+                leadingIcon
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(notification.ruleNickname)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Text("Rule triggered")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if let date = parsedDate {
+                    Text(date, format: .relative(presentation: .named))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                }
             }
-
-            Spacer()
-
-            if let date = parsedDate {
-                Text(date, format: .relative(presentation: .named))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.trailing)
-            }
+            .padding()
+            .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
+            .offset(x: offset)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        let translation = value.translation.width
+                        if translation < 0 {
+                            offset = translation
+                        }
+                    }
+                    .onEnded { value in
+                        if offset < Self.dismissThreshold {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                offset = -500
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                onDismiss()
+                            }
+                        } else {
+                            withAnimation(.spring()) {
+                                offset = 0
+                            }
+                        }
+                    }
+            )
         }
-        .padding()
-        .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
+        .clipped()
+    }
+
+    @ViewBuilder
+    private var leadingIcon: some View {
+        if let urlString = notification.detectionPreviewUrl, let url = URL(
+            string: urlString
+        ) {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    bellIcon
+                }
+            }
+        } else {
+            bellIcon
+        }
+    }
+
+    private var bellIcon: some View {
+        Image(systemName: "bell.fill")
+            .font(.title2)
+            .foregroundStyle(.blue)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

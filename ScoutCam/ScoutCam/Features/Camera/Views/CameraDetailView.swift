@@ -12,6 +12,7 @@ struct CameraDetailView: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @State private var notificationsViewModel: RecentNotificationsViewModel?
+    @State private var confirmingClearAll = false
 
     private let actionColumns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -27,6 +28,10 @@ struct CameraDetailView: View {
                 recentNotificationsSection
             }
             .padding(.bottom)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if confirmingClearAll { confirmingClearAll = false }
+            }
         }
         .navigationTitle(camera.location)
         .navigationBarTitleDisplayMode(.inline)
@@ -111,10 +116,27 @@ struct CameraDetailView: View {
 
     private var recentNotificationsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Recent Notifications")
-                .font(.title2)
-                .bold()
-                .padding(.horizontal)
+            HStack {
+                Text("Recent Notifications")
+                    .font(.title2)
+                    .bold()
+                Spacer()
+                if let notificationsViewModel, !notificationsViewModel.notifications.isEmpty {
+                    Button(confirmingClearAll ? "Tap to confirm" : "Clear All") {
+                        if confirmingClearAll {
+                            notificationsViewModel.clearAll()
+                            confirmingClearAll = false
+                        } else {
+                            confirmingClearAll = true
+                        }
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(confirmingClearAll ? .red : .secondary)
+                    .animation(.default, value: confirmingClearAll)
+                    .onDisappear { confirmingClearAll = false }
+                }
+            }
+            .padding(.horizontal)
             if let notificationsViewModel {
                 RecentNotificationView(viewModel: notificationsViewModel)
             } else {
@@ -134,7 +156,8 @@ struct CameraDetailView: View {
             camera: Camera(
                 id: "cam-preview-001",
                 location: "Living Room",
-                cameraPreviewUrl: nil
+                cameraPreviewUrl: nil,
+                previewUpdatedAt: nil
             )
         )
     }
