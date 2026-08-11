@@ -17,7 +17,7 @@ struct Rule: Identifiable {
 extension Rule {
     init(from response: RuleResponse) {
         self.id = response.publicRuleId
-        self.rule = "\(Constants.Rules.prefix) \(response.rule)"
+        self.rule = response.rule
         self.ruleNickname = response.ruleNickname.capitalized
         self.isEnabled = response.isEnabled
     }
