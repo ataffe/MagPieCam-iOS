@@ -12,6 +12,7 @@ struct CamerasHomeView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State var cameraHomeViewModel: CameraHomeViewModel
     @State private var selectionFeedbackTrigger = false
+    @State private var pushDeepLink: PushDeepLink?
 
     private var cameras: [Camera] { dependencies.cameraStore.cameras }
 
@@ -73,6 +74,15 @@ struct CamerasHomeView: View {
             }
             .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
             .sensoryFeedback(.selection, trigger: selectionFeedbackTrigger)
+            .navigationDestination(item: $pushDeepLink) { deepLink in
+                if let camera = cameras.first(where: { $0.id == deepLink.cameraId }) {
+                    CameraDetailView(camera: camera, initialNotificationId: deepLink.notificationId)
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .didTapPushNotification)) { notification in
+                guard let deepLink = notification.object as? PushDeepLink else { return }
+                pushDeepLink = deepLink
+            }
         }
         .onAppear {
             Task {

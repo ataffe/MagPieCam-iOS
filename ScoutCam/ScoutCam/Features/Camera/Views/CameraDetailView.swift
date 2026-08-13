@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CameraDetailView: View {
     let camera: Camera
+    var initialNotificationId: String? = nil
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @State private var notificationsViewModel: RecentNotificationsViewModel?
@@ -50,6 +51,10 @@ struct CameraDetailView: View {
             NotificationsView(cameraId: camera.id, scrollToId: notificationScrollTarget)
         }
         .onAppear {
+            if let id = initialNotificationId, !navigateToNotifications {
+                notificationScrollTarget = id
+                navigateToNotifications = true
+            }
             Task {
                 if notificationsViewModel == nil {
                     notificationsViewModel = RecentNotificationsViewModel(

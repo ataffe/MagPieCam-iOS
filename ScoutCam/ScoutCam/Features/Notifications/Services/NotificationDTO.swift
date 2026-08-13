@@ -25,3 +25,8 @@ nonisolated struct GetNotificationsResponse: Decodable {
 nonisolated struct ClearNotificationsRequest: Encodable {
     let publicNotificationIds: [String]
 }
+
+struct PushDeepLink: Hashable {
+    let cameraId: String
+    let notificationId: String
+}

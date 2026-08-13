@@ -11,6 +11,7 @@ import AVKit
 struct NotificationCardView: View {
     let notification: NotificationResponse
     @State private var player: AVPlayer?
+    @State private var isPlaying = false
 
     private static let isoFormatter: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
@@ -48,14 +49,18 @@ struct NotificationCardView: View {
         }
         .onDisappear {
             player?.pause()
+            isPlaying = false
         }
     }
     
     // MARK: - Media Section
     @ViewBuilder
         private var mediaSection: some View {
-            if let player {
+            if let player, isPlaying {
                 FullscreenVideoPlayer(player: player)
+                    .frame(height: 220)
+            } else if let player {
+                videoThumbnail(player: player)
                     .frame(height: 220)
             } else if let urlString = notification.detectionPreviewUrl, let url = URL(string: urlString) {
                 ZStack(alignment: .bottom) {
@@ -88,6 +93,35 @@ struct NotificationCardView: View {
                     .foregroundStyle(.blue)
                     .frame(maxWidth: .infinity)
                     .frame(height: 120)
+            }
+        }
+
+    @ViewBuilder
+        private func videoThumbnail(player: AVPlayer) -> some View {
+            ZStack {
+                if let urlString = notification.detectionPreviewUrl, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFill()
+                        default:
+                            Color.black
+                        }
+                    }
+                    .clipped()
+                } else {
+                    Color.black
+                }
+
+                Button {
+                    isPlaying = true
+                    player.play()
+                } label: {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 56))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 6)
+                }
             }
         }
 
