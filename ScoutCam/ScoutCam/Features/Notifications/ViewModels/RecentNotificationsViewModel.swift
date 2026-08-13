@@ -30,7 +30,9 @@ final class RecentNotificationsViewModel {
         nextCursor = nil
         do {
             let response = try await notificationService.getNotifications(cameraId: cameraId)
-            notifications = response.results
+            self.notifications = response.results
+            Logger.notifications
+                .info("Retrieved \(self.notifications.count) notifications")
             nextCursor = response.next
             hasMore = nextCursor != nil
         } catch {

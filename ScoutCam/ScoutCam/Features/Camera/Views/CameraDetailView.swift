@@ -13,6 +13,10 @@ struct CameraDetailView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var notificationsViewModel: RecentNotificationsViewModel?
     @State private var confirmingClearAll = false
+    @State private var clearAllFeedbackTrigger = false
+    @State private var liveViewFeedbackTrigger = false
+    @State private var navigateToNotifications = false
+    @State private var notificationScrollTarget: String? = nil
 
     private let actionColumns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -28,10 +32,6 @@ struct CameraDetailView: View {
                 recentNotificationsSection
             }
             .padding(.bottom)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if confirmingClearAll { confirmingClearAll = false }
-            }
         }
         .navigationTitle(camera.location)
         .navigationBarTitleDisplayMode(.inline)
@@ -46,14 +46,19 @@ struct CameraDetailView: View {
         .background(
             Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
         )
-        .task {
-            guard notificationsViewModel == nil else { return }
-            let vm = RecentNotificationsViewModel(
-                cameraId: camera.id,
-                notificationService: dependencies.notificationService
-            )
-            notificationsViewModel = vm
-            await vm.loadInitial()
+        .navigationDestination(isPresented: $navigateToNotifications) {
+            NotificationsView(cameraId: camera.id, scrollToId: notificationScrollTarget)
+        }
+        .onAppear {
+            Task {
+                if notificationsViewModel == nil {
+                    notificationsViewModel = RecentNotificationsViewModel(
+                        cameraId: camera.id,
+                        notificationService: dependencies.notificationService
+                    )
+                }
+                await notificationsViewModel?.loadInitial()
+            }
         }
     }
 
@@ -76,6 +81,10 @@ struct CameraDetailView: View {
             }
         }
         .buttonStyle(.plain)
+        .simultaneousGesture(TapGesture().onEnded {
+            liveViewFeedbackTrigger.toggle()
+        })
+        .sensoryFeedback(.selection, trigger: liveViewFeedbackTrigger)
     }
 
     private var actionGrid: some View {
@@ -97,19 +106,24 @@ struct CameraDetailView: View {
             }
             .buttonStyle(.plain)
 
-            CameraDetailButton(
-                image: Image(systemName: "bell.fill"),
-                imageColor: Color.yellow
+            NavigationLink(
+                destination: NotificationsView(cameraId: camera.id)
             ) {
-                Text("Notifications")
+                CameraDetailButton(
+                    image: Image(systemName: "bell.fill"),
+                    imageColor: Color.yellow
+                ) {
+                    Text("Notifications")
+                }
             }
+            .buttonStyle(.plain)
 
-            CameraDetailButton(
-                image: Image(systemName: "chart.xyaxis.line"),
-                imageColor: Color.green
-            ) {
-                Text("Stats")
-            }
+//            CameraDetailButton(
+//                image: Image(systemName: "chart.xyaxis.line"),
+//                imageColor: Color.green
+//            ) {
+//                Text("Stats")
+//            }
         }
         .padding(.horizontal)
     }
@@ -122,23 +136,29 @@ struct CameraDetailView: View {
                     .bold()
                 Spacer()
                 if let notificationsViewModel, !notificationsViewModel.notifications.isEmpty {
-                    Button(confirmingClearAll ? "Tap to confirm" : "Clear All") {
-                        if confirmingClearAll {
-                            notificationsViewModel.clearAll()
-                            confirmingClearAll = false
-                        } else {
+                    Text(confirmingClearAll ? "Hold to confirm" : "Clear All")
+                        .font(.subheadline)
+                        .foregroundStyle(confirmingClearAll ? .red : .secondary)
+                        .animation(.default, value: confirmingClearAll)
+                        .onTapGesture {
                             confirmingClearAll = true
                         }
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(confirmingClearAll ? .red : .secondary)
-                    .animation(.default, value: confirmingClearAll)
-                    .onDisappear { confirmingClearAll = false }
+                        .onLongPressGesture {
+                            guard confirmingClearAll else { return }
+                            notificationsViewModel.clearAll()
+                            clearAllFeedbackTrigger.toggle()
+                            confirmingClearAll = false
+                        }
+                        .sensoryFeedback(.success, trigger: clearAllFeedbackTrigger)
+                        .onDisappear { confirmingClearAll = false }
                 }
             }
             .padding(.horizontal)
             if let notificationsViewModel {
-                RecentNotificationView(viewModel: notificationsViewModel)
+                RecentNotificationView(viewModel: notificationsViewModel) { tapped in
+                    notificationScrollTarget = tapped.publicNotificationId
+                    navigateToNotifications = true
+                }
             } else {
                 ProgressView()
                     .frame(maxWidth: .infinity)

@@ -11,6 +11,7 @@ struct CamerasHomeView: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @State var cameraHomeViewModel: CameraHomeViewModel
+    @State private var selectionFeedbackTrigger = false
 
     private var cameras: [Camera] { dependencies.cameraStore.cameras }
 
@@ -36,6 +37,9 @@ struct CamerasHomeView: View {
                         .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
                     }
                     .buttonStyle(.plain)
+                    .simultaneousGesture(TapGesture().onEnded {
+                        selectionFeedbackTrigger.toggle()
+                    })
                 }.padding(.horizontal)
                 
                 if cameras.isEmpty && !cameraHomeViewModel.isLoading {
@@ -68,6 +72,7 @@ struct CamerasHomeView: View {
                 }
             }
             .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
+            .sensoryFeedback(.selection, trigger: selectionFeedbackTrigger)
         }
         .onAppear {
             Task {

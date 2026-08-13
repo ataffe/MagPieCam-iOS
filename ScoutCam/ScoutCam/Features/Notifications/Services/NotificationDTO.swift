@@ -7,11 +7,12 @@
 
 import Foundation
 
-nonisolated struct NotificationResponse: Decodable {
+nonisolated struct NotificationResponse: Decodable, Equatable {
     let publicNotificationId: String
     let publicCameraId: String
-    let ruleNickname: String
+    let ruleNicknames: [String]
     let detectionPreviewUrl: String?
+    let videoClipUrl: String?
     let createdAt: String
 }
 
