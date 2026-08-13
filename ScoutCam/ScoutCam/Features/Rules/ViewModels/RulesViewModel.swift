@@ -46,7 +46,7 @@ final class RulesViewModel {
         defer { isLoading = false }
         let response = try await rulesService.addRule(
             nickname: nickname,
-            rule: "\(Constants.Rules.prefix) \(rule)",
+            rule: "\(rule)",
             for: camera.id
         )
         rules.append(Rule(from: response))

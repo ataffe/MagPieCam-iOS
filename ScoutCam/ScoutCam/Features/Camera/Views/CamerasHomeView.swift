@@ -11,6 +11,8 @@ struct CamerasHomeView: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @State var cameraHomeViewModel: CameraHomeViewModel
+    @State private var selectionFeedbackTrigger = false
+    @State private var pushDeepLink: PushDeepLink?
 
     private var cameras: [Camera] { dependencies.cameraStore.cameras }
 
@@ -36,6 +38,9 @@ struct CamerasHomeView: View {
                         .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
                     }
                     .buttonStyle(.plain)
+                    .simultaneousGesture(TapGesture().onEnded {
+                        selectionFeedbackTrigger.toggle()
+                    })
                 }.padding(.horizontal)
                 
                 if cameras.isEmpty && !cameraHomeViewModel.isLoading {
@@ -68,6 +73,16 @@ struct CamerasHomeView: View {
                 }
             }
             .background(Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea())
+            .sensoryFeedback(.selection, trigger: selectionFeedbackTrigger)
+            .navigationDestination(item: $pushDeepLink) { deepLink in
+                if let camera = cameras.first(where: { $0.id == deepLink.cameraId }) {
+                    CameraDetailView(camera: camera, initialNotificationId: deepLink.notificationId)
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .didTapPushNotification)) { notification in
+                guard let deepLink = notification.object as? PushDeepLink else { return }
+                pushDeepLink = deepLink
+            }
         }
         .onAppear {
             Task {
@@ -101,12 +116,14 @@ struct CamerasHomeView: View {
         Camera(
             id: "cam-preview-001",
             location: "Front Door",
-            cameraPreviewUrl: nil
+            cameraPreviewUrl: nil,
+            previewUpdatedAt: nil
         ),
         Camera(
             id: "cam-preview-002",
             location: "Backyard",
-            cameraPreviewUrl: nil
+            cameraPreviewUrl: nil,
+            previewUpdatedAt: nil
         ),
     ]
     return CamerasHomeView(cameraService: deps.cameraService)

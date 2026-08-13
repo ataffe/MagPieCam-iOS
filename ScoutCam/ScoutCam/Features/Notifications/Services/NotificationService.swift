@@ -27,4 +27,12 @@ actor NotificationService {
             NotificationsEndpoint.getNotifications(cameraId: cameraId, cursor: cursor)
         )
     }
+
+    func clearNotifications(cameraId: String, ids: [String]) async throws {
+        let body = ClearNotificationsRequest(publicNotificationIds: ids)
+        try await apiClient.request(
+            endpoint: NotificationsEndpoint.clearNotifications(cameraId: cameraId),
+            body: body
+        )
+    }
 }

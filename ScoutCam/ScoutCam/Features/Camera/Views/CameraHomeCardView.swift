@@ -31,6 +31,14 @@ struct CameraHomeCardView: View {
                             .foregroundStyle(.white)
                             .padding()
                     }
+                    .overlay(alignment: .bottomTrailing) {
+                        if let date = camera.parsedPreviewUpdatedAt {
+                            Text(date, format: .relative(presentation: .named))
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.8))
+                                .padding(8)
+                        }
+                    }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 RoundedRectangle(cornerRadius: 12)
@@ -58,7 +66,7 @@ struct CameraHomeCardView: View {
 
 #Preview {
     CameraHomeCardView(
-        camera: Camera(id: "1", location: "Kitchen", cameraPreviewUrl: nil),
+        camera: Camera(id: "1", location: "Kitchen", cameraPreviewUrl: nil, previewUpdatedAt: nil),
         previewImage: nil
     )
 }

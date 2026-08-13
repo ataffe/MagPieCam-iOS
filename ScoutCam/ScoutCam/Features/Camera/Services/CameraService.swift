@@ -44,7 +44,8 @@ actor CameraService {
             let camera = Camera(
                 id: response.publicCameraId,
                 location: location,
-                cameraPreviewUrl: nil
+                cameraPreviewUrl: nil,
+                previewUpdatedAt: nil
             )
             await MainActor.run { cameraStore.add(camera) }
             Logger.camera.info("Camera \(camera.id) claimed and cached.")
@@ -64,7 +65,8 @@ actor CameraService {
                 Camera(
                     id: $0.publicCameraId,
                     location: $0.location.capitalized,
-                    cameraPreviewUrl: $0.cameraPreviewUrl
+                    cameraPreviewUrl: $0.cameraPreviewUrl,
+                    previewUpdatedAt: $0.previewUpdatedAt
                 )
             }
             await MainActor.run { cameraStore.cameras = userCameras }
