@@ -33,7 +33,7 @@ struct LoginFormView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text("ScoutCam") // TODO: Replace with logo
+            Text(Constants.App.appName) // TODO: Replace with logo
                 .font(.largeTitle)
                 .bold()
                 .foregroundStyle(Color.blue)

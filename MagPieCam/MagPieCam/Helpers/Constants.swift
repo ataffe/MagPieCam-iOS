@@ -8,6 +8,10 @@
 import SwiftUI
 
 enum Constants {
+    enum App {
+        static let appName = "MagPie Cam"
+    }
+    
     enum Rules {
         static let prefix = "Tell me when you see"
         static let maxNicknameLength = 50
