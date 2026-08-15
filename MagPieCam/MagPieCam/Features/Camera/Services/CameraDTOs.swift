@@ -22,3 +22,7 @@ nonisolated struct CameraResponse: Decodable {
     let cameraPreviewUrl: String?
     let previewUpdatedAt: String?
 }
+
+nonisolated struct CameraUpdateRequest: Encodable {
+    let location: String
+}

@@ -13,11 +13,16 @@ struct CameraDetailView: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.colorScheme) private var colorScheme
     @State private var notificationsViewModel: RecentNotificationsViewModel?
-    @State private var confirmingClearAll = false
-    @State private var clearAllFeedbackTrigger = false
-    @State private var liveViewFeedbackTrigger = false
+    @State private var cameraLocation: String
     @State private var navigateToNotifications = false
     @State private var notificationScrollTarget: String? = nil
+    @State private var isShowingSettings = false
+
+    init(camera: Camera, initialNotificationId: String? = nil) {
+        self.camera = camera
+        self.initialNotificationId = initialNotificationId
+        self._cameraLocation = State(initialValue: camera.location)
+    }
 
     private let actionColumns = [GridItem(.flexible()), GridItem(.flexible())]
 
@@ -34,15 +39,23 @@ struct CameraDetailView: View {
             }
             .padding(.bottom)
         }
-        .navigationTitle(camera.location)
+        .navigationTitle(cameraLocation)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Settings", systemImage: "gearshape.fill") {
-                    print("Settings sheet")
+                    isShowingSettings = true
                 }
                 .buttonStyle(.borderless)
             }
+        }
+        .sheet(isPresented: $isShowingSettings) {
+            CameraSettingsSheetView(
+                camera: camera,
+                cameraService: dependencies.cameraService,
+                onSave: { newLocation in cameraLocation = newLocation }
+            )
+            .presentationDetents([PresentationDetent.medium])
         }
         .background(
             Constants.UI.backgroundGradient(for: colorScheme).ignoresSafeArea()
@@ -70,26 +83,7 @@ struct CameraDetailView: View {
     // MARK: - Sections
 
     private var liveViewCard: some View {
-        NavigationLink(
-            destination: CameraStreamingView(camera: camera)
-        ) {
-            if let previewImage {
-                CameraDetailPreviewCardView(
-                    previewImage: previewImage,
-                    location: camera.location
-                )
-            } else {
-                CameraDetailButton(image: Image(systemName: "video")) {
-                    Text("Go Live")
-                }
-                .foregroundStyle(.red)
-            }
-        }
-        .buttonStyle(.plain)
-        .simultaneousGesture(TapGesture().onEnded {
-            liveViewFeedbackTrigger.toggle()
-        })
-        .sensoryFeedback(.selection, trigger: liveViewFeedbackTrigger)
+        CameraLiveViewCard(camera: camera, previewImage: previewImage)
     }
 
     private var actionGrid: some View {
@@ -134,43 +128,10 @@ struct CameraDetailView: View {
     }
 
     private var recentNotificationsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Recent Notifications")
-                    .font(.title2)
-                    .bold()
-                Spacer()
-                if let notificationsViewModel, !notificationsViewModel.notifications.isEmpty {
-                    Text(confirmingClearAll ? "Hold to confirm" : "Clear All")
-                        .font(.subheadline)
-                        .foregroundStyle(confirmingClearAll ? .red : .secondary)
-                        .animation(.default, value: confirmingClearAll)
-                        .onTapGesture {
-                            confirmingClearAll = true
-                        }
-                        .onLongPressGesture {
-                            guard confirmingClearAll else { return }
-                            notificationsViewModel.clearAll()
-                            clearAllFeedbackTrigger.toggle()
-                            confirmingClearAll = false
-                        }
-                        .sensoryFeedback(.success, trigger: clearAllFeedbackTrigger)
-                        .onDisappear { confirmingClearAll = false }
-                }
-            }
-            .padding(.horizontal)
-            if let notificationsViewModel {
-                RecentNotificationView(viewModel: notificationsViewModel) { tapped in
-                    notificationScrollTarget = tapped.publicNotificationId
-                    navigateToNotifications = true
-                }
-            } else {
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-            }
+        RecentNotificationsSectionView(notificationsViewModel: notificationsViewModel) { tapped in
+            notificationScrollTarget = tapped.publicNotificationId
+            navigateToNotifications = true
         }
-        .padding(.vertical)
     }
 }
 

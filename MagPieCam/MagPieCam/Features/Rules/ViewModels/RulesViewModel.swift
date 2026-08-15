@@ -14,6 +14,7 @@ final class RulesViewModel {
     let rulesService: RulesService
     var rules: [Rule] = []
     var isLoading = false
+    var fetchError: String? = nil
     private var toggleTasks: [String: Task<Void, Never>] = [:]
     
     init(
@@ -29,6 +30,7 @@ final class RulesViewModel {
     
     func getCameraRules() async  {
         isLoading = true
+        fetchError = nil
         defer { isLoading = false }
         do {
             rules = try await rulesService
@@ -37,7 +39,7 @@ final class RulesViewModel {
                 Rule(from: ruleResponse)
             }
         } catch {
-            // TODO: Display error
+            fetchError = "Unable to load rules. Check your connection and try again."
         }
     }
     

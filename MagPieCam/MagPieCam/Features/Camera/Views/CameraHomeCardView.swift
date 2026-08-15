@@ -29,6 +29,9 @@ struct CameraHomeCardView: View {
                         Text(camera.location)
                             .font(Constants.UI.cameraPreviewLocationFont)
                             .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.ultraThinMaterial, in: Capsule())
                             .padding()
                     }
                     .overlay(alignment: .bottomTrailing) {
@@ -66,7 +69,7 @@ struct CameraHomeCardView: View {
 
 #Preview {
     CameraHomeCardView(
-        camera: Camera(id: "1", location: "Kitchen", cameraPreviewUrl: nil, previewUpdatedAt: nil),
-        previewImage: nil
+        camera: Camera(id: "1", location: "Kitchen", cameraPreviewUrl: nil, previewUpdatedAt: "2026-08-14T12:00:00.000Z"),
+        previewImage: UIImage(named: "PreviewCamera") ?? UIImage(systemName: "photo")
     )
 }

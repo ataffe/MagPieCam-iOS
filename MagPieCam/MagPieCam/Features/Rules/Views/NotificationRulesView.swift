@@ -19,6 +19,19 @@ struct NotificationRulesView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                if let error = rulesViewModel.fetchError {
+                    ContentUnavailableView {
+                        Label("Couldn't Load Rules", systemImage: "exclamationmark.triangle")
+                    } description: {
+                        Text(error)
+                    } actions: {
+                        Button("Try Again") {
+                            Task { await rulesViewModel.getCameraRules() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
                 List {
                     ForEach(rulesViewModel.rules) { rule in
                         NotificationRuleCardView(rule: rule) {

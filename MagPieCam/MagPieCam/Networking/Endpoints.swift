@@ -40,11 +40,13 @@ enum AuthEndpoint: ApiEndpoint {
 enum CameraEndpoint: ApiEndpoint {
     case claimCamera
     case getCameras
+    case updateCamera(cameraId: String)
 
     var path: String {
         switch self {
         case .claimCamera: "cameras/claim/"
         case .getCameras: "cameras/"
+        case .updateCamera(let cameraId): "cameras/\(cameraId)/"
         }
     }
 
@@ -52,6 +54,7 @@ enum CameraEndpoint: ApiEndpoint {
         switch self {
         case .claimCamera: .post
         case .getCameras: .get
+        case .updateCamera: .put
         }
     }
 }

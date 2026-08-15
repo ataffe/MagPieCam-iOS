@@ -58,6 +58,23 @@ actor CameraService {
         }
     }
     
+    func updateCamera(id: String, location: String) async throws {
+        let body = CameraUpdateRequest(location: location)
+        let response: CameraResponse = try await callApi(.updateCamera(cameraId: id), body: body)
+        let updated = Camera(
+            id: response.publicCameraId,
+            location: response.location.capitalized,
+            cameraPreviewUrl: response.cameraPreviewUrl,
+            previewUpdatedAt: response.previewUpdatedAt
+        )
+        await MainActor.run {
+            if let index = cameraStore.cameras.firstIndex(where: { $0.id == id }) {
+                cameraStore.cameras[index] = updated
+            }
+        }
+        Logger.camera.info("Camera \(id) updated.")
+    }
+
     func fetchUserCameras() async throws {
         do {
             let response: [CameraResponse] = try await callApi(CameraEndpoint.getCameras)
