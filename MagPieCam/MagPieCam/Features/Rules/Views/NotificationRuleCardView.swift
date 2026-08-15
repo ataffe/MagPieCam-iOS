@@ -18,7 +18,7 @@ struct NotificationRuleCardView: View {
                     .foregroundStyle(rule.isEnabled ? Color.primary : Color.secondary)
                     .font(.title2)
                     .bold()
-                Text(rule.rule)
+                Text("\(Constants.Rules.prefix) \(rule.rule)")
                     .foregroundStyle(rule.isEnabled ? Color.primary : Color.secondary)
                     .font(.subheadline)
             }
@@ -44,7 +44,7 @@ struct NotificationRuleCardView: View {
 
 #Preview {
     NotificationRuleCardView(
-        rule: Rule(id: "123", rule: "Tell me when you see a cat use the litterbox.", ruleNickname: "Cat Uses Litterbox", isEnabled: true),
+        rule: Rule(id: "123", rule: "a cat use the litterbox.", ruleNickname: "Cat Uses Litterbox", isEnabled: true),
         onToggle: {}
     )
 }
