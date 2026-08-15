@@ -1,14 +1,13 @@
-# ScoutCamiOS
-iOS Application for the Scout camera system.
+# MagPieCam-iOS
+An iOS app that enables users to receive smart notifications based on rules that they set, and video live video from a MagPieCam.
 
 # System Diagram
-![Scout Cam System Diagram](https://github.com/ataffe/ScoutCamAssets/blob/main/system_diagram/scout-cam-system-diagram-iOS.png?raw=true)
+![Scout Cam System Diagram](https://github.com/ataffe/MagPieCam-Assets/blob/main/system_diagram/magpie-cam-system-diagram-iOS.png?raw=true)
 
 ### Brief Overview
 
-[Scout Cam Camera Client](https://github.com/ataffe/GuardianCamCameraClient) - Detects Motion and filters images using object detection and then sends the image to the 
-event processor if an object is detected.
+[MagPieCam Edge Agent](https://github.com/ataffe/MagPieCamEdgeAgent) - An agent that runs on the camera. It tracks movement and sends images and video to the MagPieCam-Core backend for processing.
 
-[Scout Cam Web Service](https://github.com/ataffe/ScoutCamEventProcessor) - Handles CRUD operations for Users, Cameras, and Rules. Also handles streaming coordination between users and cameras.
+[MagPieCam-Core](https://github.com/ataffe/MagPieCam-Core) - The backend for the MagPieCam system. MagPieCam-Core Handles CRUD operations for Users, Cameras, Rules, and notifications. MagPieCam-Core also facilitates streaming coordination between users and cameras using a MedaMTX server. The core also contains workers that handle rules evaluation and trigger push notifications when a rules is fired.
 
 
