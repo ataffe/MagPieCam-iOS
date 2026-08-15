@@ -9,7 +9,6 @@ import SwiftUI
 
 struct CameraDetailPreviewCardView: View {
     let previewImage: UIImage
-    let location: String
     
     var body: some View {
         Image(uiImage: previewImage)
@@ -22,12 +21,6 @@ struct CameraDetailPreviewCardView: View {
                     startPoint: .center,
                     endPoint: .bottom
                 )
-            }
-            .overlay(alignment: .topLeading) {
-                Text(location)
-                    .font(Constants.UI.cameraPreviewLocationFont)
-                    .foregroundStyle(.white)
-                    .padding()
             }
             .overlay(alignment: .center) {
                 VStack(spacing: 8) {
@@ -48,5 +41,5 @@ struct CameraDetailPreviewCardView: View {
 }
 
 #Preview {
-    CameraDetailPreviewCardView(previewImage: UIImage(named: "preview_test_image")!, location: "Yosemite")
+    CameraDetailPreviewCardView(previewImage: UIImage(named: "preview_test_image")!)
 }
