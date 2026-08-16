@@ -1,6 +1,11 @@
 # MagPieCam-iOS
 An iOS app that enables users to receive smart notifications based on rules that they set, and video live video from a MagPieCam.
 
+![](https://github.com/ataffe/MagPieCam-Assets/blob/main/images/screenshots/login_small.png?raw=true)
+![](https://github.com/ataffe/MagPieCam-Assets/blob/main/images/screenshots/camera-detail_small.png?raw=true)
+![](https://github.com/ataffe/MagPieCam-Assets/blob/main/images/screenshots/notifiactions_small.png?raw=true)
+![](https://github.com/ataffe/MagPieCam-Assets/blob/main/images/screenshots/rules_small.png?raw=true)
+
 # System Diagram
 ![Scout Cam System Diagram](https://github.com/ataffe/MagPieCam-Assets/blob/main/system_diagram/magpie-cam-system-diagram-iOS.png?raw=true)
 
