@@ -390,7 +390,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MagPieCam/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MagPie Cam";
+				INFOPLIST_KEY_CFBundleDisplayName = "Magpie Cam";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan a QR Code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app needs local network access to stream video.";
@@ -430,7 +430,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MagPieCam/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "MagPie Cam";
+				INFOPLIST_KEY_CFBundleDisplayName = "Magpie Cam";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan a QR Code.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app needs local network access to stream video.";

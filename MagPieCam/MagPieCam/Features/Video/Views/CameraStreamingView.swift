@@ -30,17 +30,19 @@ struct CameraStreamingView: View {
     }
 
     private func requestLandscape() {
+        AppDelegate.orientationLock = .landscapeRight
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let prefs = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .landscapeRight)
-        scene.requestGeometryUpdate(prefs) { error in
+        scene.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscapeRight)) { error in
             Logger.whepClient.error("Failed to rotate to landscape: \(error.localizedDescription)")
         }
     }
 
     private func requestPortrait() {
+        AppDelegate.orientationLock = .portrait
         guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let prefs = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .portrait)
-        scene.requestGeometryUpdate(prefs) { error in
+        scene.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait)) { error in
             Logger.whepClient.error("Failed to rotate to portrait: \(error.localizedDescription)")
         }
     }
@@ -68,7 +70,7 @@ struct CameraStreamingView: View {
                 Constants.UI.backgroundGradient(for: colorScheme)
                     .ignoresSafeArea()
                 RTCVideoView(track: whepClient.remoteVideoTrack)
-                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipShape(RoundedRectangle(cornerRadius: Constants.UI.cardCornerRadius))
                     .overlay(alignment: .bottomTrailing) {
                         if isConnected {
@@ -128,7 +130,14 @@ struct CameraStreamingView: View {
                 whepClient.connect()
             }
         }
-        .onDisappear { whepClient.disconnect() }
+        .onDisappear {
+            whepClient.disconnect()
+            AppDelegate.orientationLock = .portrait
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                scene.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+                scene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait)) { _ in }
+            }
+        }
         .task {
             try? await Task.sleep(for: .seconds(30))
             if !isConnected { isTimedOut = true }
@@ -150,9 +159,9 @@ struct RTCVideoView: UIViewRepresentable {
     }
 }
 
-#Preview {
-    NavigationStack {
-        CameraStreamingView(camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil, previewUpdatedAt: nil))
-    }
-    .environment(AppDependencies())
-}
+//#Preview {
+//    NavigationStack {
+//        CameraStreamingView(camera: Camera(id: "testId", location: "Office", cameraPreviewUrl: nil, previewUpdatedAt: nil))
+//    }
+//    .environment(AppDependencies())
+//}
