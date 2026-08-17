@@ -1,0 +1,15 @@
+//
+//  Release.xcconfig.example
+//  MagPieCam
+//
+//  Template for release builds. Copy this file to Release.xcconfig and
+//  point it at your production MagPieCam-Core backend.
+//  Release.xcconfig is gitignored so your own addresses stay out of the repo.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+// The $() below is an escape so the // in https:// is not read as a comment.
+API_BASE_URL = https:/$()/YOUR_BACKEND_HOST/v1/
+WHEP_URL = https:/$()/YOUR_BACKEND_HOST
