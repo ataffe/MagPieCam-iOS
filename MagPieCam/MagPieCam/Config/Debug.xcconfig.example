@@ -1,0 +1,15 @@
+//
+//  Debug.xcconfig.example
+//  MagPieCam
+//
+//  Template for local debug builds. Copy this file to Debug.xcconfig and
+//  replace the host below with the address of your own MagPieCam-Core backend.
+//  Debug.xcconfig is gitignored so your local addresses stay out of the repo.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+// The $() below is an escape so the // in http:// is not read as a comment.
+API_BASE_URL = http:/$()/YOUR_BACKEND_HOST:8000/v1/
+WHEP_URL = http:/$()/YOUR_BACKEND_HOST:8889

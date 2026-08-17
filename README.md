@@ -23,4 +23,22 @@ An iOS app that enables users to receive smart notifications based on rules that
 
 [MagPieCam-Core](https://github.com/ataffe/MagPieCam-Core) - The backend for the MagPieCam system. MagPieCam-Core Handles CRUD operations for Users, Cameras, Rules, and notifications. MagPieCam-Core also facilitates streaming coordination between users and cameras using a MedaMTX server. The core also contains workers that handle rules evaluation and trigger push notifications when a rules is fired.
 
+# Setup
+
+The app reads its backend addresses from an xcconfig file that is not checked in,
+so you need to create one pointing at your own [MagPieCam-Core](https://github.com/ataffe/MagPieCam-Core) instance:
+
+```sh
+cd MagPieCam/MagPieCam/Config
+cp Debug.xcconfig.example Debug.xcconfig
+cp Release.xcconfig.example Release.xcconfig
+```
+
+Then edit both files and replace `YOUR_BACKEND_HOST` with the host running
+MagPieCam-Core. `API_BASE_URL` points at the Core API and `WHEP_URL` at its
+MediaMTX WHEP endpoint.
+
+These two files are gitignored. Without them the build still compiles, but
+`API_BASE_URL` resolves to an empty string and the app traps at launch.
+
 

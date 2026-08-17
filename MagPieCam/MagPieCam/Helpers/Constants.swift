@@ -40,8 +40,4 @@ enum Constants {
                   )
         }
     }
-    
-    enum Video {
-        static let liveStreamUrl = "http://10.0.0.53:8889/cam"
-    }
 }

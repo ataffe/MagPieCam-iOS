@@ -63,3 +63,9 @@ fastlane/test_output
 
 urls.txt
 certs
+
+# Local build configuration. These hold the addresses of your own MagPieCam
+# backend, so they stay out of the repo. Copy the tracked .example files and
+# fill in your own values -- see the README for setup.
+MagPieCam/MagPieCam/Config/Debug.xcconfig
+MagPieCam/MagPieCam/Config/Release.xcconfig
