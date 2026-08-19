@@ -76,7 +76,11 @@ struct CameraDetailView: View {
                     )
                 }
                 await notificationsViewModel?.loadInitial()
+                notificationsViewModel?.startPolling()
             }
+        }
+        .onDisappear {
+            notificationsViewModel?.stopPolling()
         }
     }
 

@@ -83,10 +83,10 @@ struct CamerasHomeView: View {
                 guard let deepLink = notification.object as? PushDeepLink else { return }
                 pushDeepLink = deepLink
             }
-        }
-        .onAppear {
-            Task {
-                await cameraHomeViewModel.getUserCameras()
+            .onAppear {
+                Task {
+                    await cameraHomeViewModel.getUserCameras()
+                }
             }
         }
     }

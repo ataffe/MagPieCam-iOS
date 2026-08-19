@@ -21,7 +21,7 @@ struct NotificationRowView: View {
             ?? ISO8601DateFormatter().date(from: notification.createdAt)
     }
 
-    var body: some View {
+    private var rowContent: some View {
         HStack(spacing: 14) {
             leadingIcon
                 .frame(width: 44, height: 44)
@@ -49,7 +49,11 @@ struct NotificationRowView: View {
         .padding()
         .glassEffect(in: .rect(cornerRadius: Constants.UI.cardCornerRadius))
         .contentShape(Rectangle())
-        .onTapGesture { onTap?() }
+    }
+
+    var body: some View {
+        Button { onTap?() } label: { rowContent }
+            .buttonStyle(.plain)
     }
 
     @ViewBuilder
