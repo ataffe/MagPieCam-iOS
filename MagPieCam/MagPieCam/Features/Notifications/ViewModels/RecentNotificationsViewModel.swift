@@ -18,6 +18,9 @@ final class RecentNotificationsViewModel {
     private let cameraId: String
     private let notificationService: NotificationService
     private var nextCursor: String? = nil
+    private var pollingTask: Task<Void, Never>?
+
+    private static let pollingInterval: Duration = .seconds(30)
 
     init(cameraId: String, notificationService: NotificationService) {
         self.cameraId = cameraId
@@ -39,6 +42,22 @@ final class RecentNotificationsViewModel {
             Logger.notifications.error("Failed to load notifications: \(error)")
         }
         isLoading = false
+    }
+
+    func startPolling() {
+        pollingTask?.cancel()
+        pollingTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.pollingInterval)
+                guard !Task.isCancelled else { return }
+                await loadInitial()
+            }
+        }
+    }
+
+    func stopPolling() {
+        pollingTask?.cancel()
+        pollingTask = nil
     }
 
     func dismiss(id: String) {
